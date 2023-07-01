@@ -3,7 +3,7 @@ steps = [
         """
         CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY,
-            username TEXT NOT NULL,
+            username TEXT NOT NULL UNIQUE,
             email TEXT NOT NULL,
             password_hash TEXT NOT NULL,
             avatar TEXT DEFAULT 'default_avatar.jpg',
@@ -16,7 +16,6 @@ steps = [
         """
         DROP TABLE users;
         """
-
     ],
     [
         """
@@ -56,7 +55,13 @@ steps = [
             name TEXT NOT NULL
         );
         """,
+        # "Down" SQL statement
         """
+        DROP TABLE genres;
+        """
+    ],
+    [
+    """
         INSERT INTO genres (name)
         VALUES
             ('acoustic'), ('afrobeat'), ('alt-rock'), ('alternative'), ('ambient'),
@@ -88,9 +93,8 @@ steps = [
         """,
         # "Down" SQL statement
         """
-        DROP TABLE genres;
-        """
-
+        DELETE FROM genres;
+        """,
     ],
     [
         """
@@ -119,7 +123,6 @@ steps = [
         """
         DROP TABLE playlists;
         """
-
     ],
     [
         """
@@ -133,7 +136,6 @@ steps = [
         """
         DROP TABLE stages;
         """
-
     ],
     [
         """
@@ -147,7 +149,6 @@ steps = [
         """
         DROP TABLE stage_playlists;
         """
-
     ],
     [
         """
@@ -175,7 +176,6 @@ steps = [
         """
         DROP TABLE stage_participants;
         """
-
     ],
     [
         """
@@ -189,7 +189,6 @@ steps = [
         """
         DROP TABLE stage_genres;
         """
-
     ],
     [
         """
@@ -204,6 +203,5 @@ steps = [
         """
         DROP TABLE chats;
         """
-
     ]
 ]
