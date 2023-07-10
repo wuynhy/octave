@@ -1,5 +1,6 @@
 steps = [
     [
+        # "Up" SQL statement
         """
         CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY,
@@ -15,21 +16,21 @@ steps = [
         # "Down" SQL statement
         """
         DROP TABLE users;
-        """
+        """,
     ],
     [
         """
         CREATE TABLE IF NOT EXISTS friendships (
             id SERIAL PRIMARY KEY,
-            user_id INTEGER NOT NULL REFERENCES users (id),
-            friend_id INTEGER NOT NULL REFERENCES users (id),
+            user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+            friend_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
             status TEXT NOT NULL
         );
         """,
         # "Down" SQL statement
         """
         DROP TABLE friendships;
-        """
+        """,
     ],
     [
         """
@@ -45,8 +46,7 @@ steps = [
         # "Down" SQL statement
         """
         DROP TABLE songs;
-        """
-
+        """,
     ],
     [
         """
@@ -58,10 +58,11 @@ steps = [
         # "Down" SQL statement
         """
         DROP TABLE genres;
-        """
+        """,
     ],
     [
-    """
+        # "Up" SQL statement
+        """
         INSERT INTO genres (name)
         VALUES
             ('acoustic'), ('afrobeat'), ('alt-rock'), ('alternative'), ('ambient'),
@@ -97,24 +98,25 @@ steps = [
         """,
     ],
     [
+        # "Up" SQL statement
         """
         CREATE TABLE IF NOT EXISTS song_genres (
-            song_id INTEGER NOT NULL REFERENCES songs(id),
-            genre_id INTEGER NOT NULL REFERENCES genres(id),
+            song_id INTEGER NOT NULL REFERENCES songs(id) ON DELETE CASCADE,
+            genre_id INTEGER NOT NULL REFERENCES genres(id) ON DELETE CASCADE,
             PRIMARY KEY (song_id, genre_id)
         );
         """,
         # "Down" SQL statement
         """
         DROP TABLE song_genres;
-        """
-
+        """,
     ],
     [
+        # "Up" SQL statement
         """
         CREATE TABLE IF NOT EXISTS playlists (
             id SERIAL PRIMARY KEY,
-            user_id INTEGER NOT NULL REFERENCES users(id),
+            user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
             name TEXT NOT NULL,
             description TEXT NOT NULL
         );
@@ -122,86 +124,90 @@ steps = [
         # "Down" SQL statement
         """
         DROP TABLE playlists;
-        """
+        """,
     ],
     [
+        # "Up" SQL statement
         """
         CREATE TABLE IF NOT EXISTS stages (
             id SERIAL PRIMARY KEY,
             name TEXT NOT NULL,
-            host_id INTEGER NOT NULL REFERENCES users(id)
+            host_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE
         );
         """,
         # "Down" SQL statement
         """
         DROP TABLE stages;
-        """
+        """,
     ],
     [
         """
         CREATE TABLE IF NOT EXISTS stage_playlists (
-            stage_id INTEGER NOT NULL REFERENCES stages(id),
-            playlist_id INTEGER NOT NULL REFERENCES playlists(id),
+            stage_id INTEGER NOT NULL REFERENCES stages(id) ON DELETE CASCADE,
+            playlist_id INTEGER NOT NULL REFERENCES playlists(id) ON DELETE CASCADE,
             PRIMARY KEY (stage_id, playlist_id)
         );
         """,
         # "Down" SQL statement
         """
         DROP TABLE stage_playlists;
-        """
+        """,
     ],
     [
+        # "Up" SQL statement
         """
         CREATE TABLE IF NOT EXISTS playlist_songs (
-            playlist_id INTEGER NOT NULL REFERENCES playlists(id),
-            song_id INTEGER NOT NULL REFERENCES songs(id),
+            playlist_id INTEGER NOT NULL REFERENCES playlists(id) ON DELETE CASCADE,
+            song_id INTEGER NOT NULL REFERENCES songs(id) ON DELETE CASCADE,
             PRIMARY KEY (playlist_id, song_id)
         );
         """,
         # "Down" SQL statement
         """
         DROP TABLE playlist_songs;
-        """
-
+        """,
     ],
     [
+        # "Up" SQL statement
         """
         CREATE TABLE IF NOT EXISTS stage_participants (
-            stage_id INTEGER NOT NULL REFERENCES stages(id),
-            participant_id INTEGER REFERENCES users(id),
+            stage_id INTEGER NOT NULL REFERENCES stages(id) ON DELETE CASCADE,
+            participant_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
             PRIMARY KEY (stage_id, participant_id)
         );
         """,
         # "Down" SQL statement
         """
         DROP TABLE stage_participants;
-        """
+        """,
     ],
     [
+        # "Up" SQL statement
         """
         CREATE TABLE IF NOT EXISTS stage_genres (
-            stage_id INTEGER NOT NULL REFERENCES stages(id),
-            genre_id INTEGER REFERENCES genres(id),
+            stage_id INTEGER NOT NULL REFERENCES stages(id) ON DELETE CASCADE,
+            genre_id INTEGER REFERENCES genres(id) ON DELETE CASCADE,
             PRIMARY KEY (stage_id, genre_id)
         );
         """,
         # "Down" SQL statement
         """
         DROP TABLE stage_genres;
-        """
+        """,
     ],
     [
+        # "Up" SQL statement
         """
         CREATE TABLE IF NOT EXISTS chats (
             id SERIAL PRIMARY KEY,
-            stage_id INTEGER NOT NULL REFERENCES stages(id),
-            sender_id INTEGER NOT NULL REFERENCES users(id),
+            stage_id INTEGER NOT NULL REFERENCES stages(id) ON DELETE CASCADE,
+            sender_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
             message TEXT NOT NULL
         );
         """,
         # "Down" SQL statement
         """
         DROP TABLE chats;
-        """
-    ]
+        """,
+    ],
 ]
