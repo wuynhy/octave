@@ -121,7 +121,7 @@ steps = [
             id SERIAL PRIMARY KEY,
             user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
             name TEXT NOT NULL,
-            description TEXT NOT NULL
+            description TEXT NOT NULL,
             cover TEXT DEFAULT 'default_playlist_art.jpg'
         );
         """,
@@ -136,7 +136,7 @@ steps = [
         CREATE TABLE IF NOT EXISTS stages (
             id SERIAL PRIMARY KEY,
             name TEXT NOT NULL,
-            host_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE
+            host_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
             cover TEXT DEFAULT 'default_stage_art.jpg'
         );
         """,
