@@ -19,6 +19,7 @@ steps = [
         """,
     ],
     [
+        # "Up" SQL statement
         """
         CREATE TABLE IF NOT EXISTS friendships (
             id SERIAL PRIMARY KEY,
@@ -33,6 +34,7 @@ steps = [
         """,
     ],
     [
+        # "Up" SQL statement
         """
         CREATE TABLE IF NOT EXISTS songs (
             id SERIAL PRIMARY KEY,
@@ -49,6 +51,7 @@ steps = [
         """,
     ],
     [
+        # "Up" SQL statement
         """
         CREATE TABLE IF NOT EXISTS genres (
             id SERIAL PRIMARY KEY,
@@ -119,6 +122,7 @@ steps = [
             user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
             name TEXT NOT NULL,
             description TEXT NOT NULL
+            cover TEXT DEFAULT 'default_playlist_art.jpg'
         );
         """,
         # "Down" SQL statement
@@ -133,6 +137,7 @@ steps = [
             id SERIAL PRIMARY KEY,
             name TEXT NOT NULL,
             host_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE
+            cover TEXT DEFAULT 'default_stage_art.jpg'
         );
         """,
         # "Down" SQL statement
@@ -140,7 +145,8 @@ steps = [
         DROP TABLE stages;
         """,
     ],
-    [
+    [   
+        # "Up" SQL statement
         """
         CREATE TABLE IF NOT EXISTS stage_playlists (
             stage_id INTEGER NOT NULL REFERENCES stages(id) ON DELETE CASCADE,
