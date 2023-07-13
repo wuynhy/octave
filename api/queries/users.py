@@ -23,10 +23,10 @@ class UserOut(BaseModel):
     id: int
     username: str
     email: str
-    avatar: str
-    bio: str
-    friends_count: int
-    following_count: int
+    avatar: Optional[str] = None
+    bio: Optional[str] = None
+    friends_count: int = 0
+    following_count: int = 0
 
 
 class UsersOut(BaseModel):
@@ -75,18 +75,22 @@ class UserRepository:
         except Exception:
             raise Exception("Failed to get user")
 
-    def get_all(self):
+    def get_all(self) -> UsersOut:
         try:
             with pool.connection() as conn:
                 with conn.cursor() as db:
-                    result = db.execute(
+                    db.execute(
                         """
-                        SELECT id, username, email, avatar, bio, friends_count, following_count, password_hash
-                        FROM users
-                        ORDER BY id;
+                            SELECT u.id, u.username, u.email, u.avatar, u.bio,
+                            (SELECT COUNT(*) FROM friendships WHERE (user_id = u.id OR friend_id = u.id) AND status = 'accepted') AS friends_count,
+                            (SELECT COUNT(*) FROM friendships WHERE (user_id = u.id) AND status = 'pending') AS following_count
+                            FROM users AS u
+                            ORDER BY u.id;
                         """
                     )
-                    return [
+                    records = db.fetchall()
+
+                    users = [
                         UserOut(
                             id=record[0],
                             username=record[1],
@@ -96,8 +100,10 @@ class UserRepository:
                             friends_count=record[5],
                             following_count=record[6],
                         )
-                        for record in result
+                        for record in records
                     ]
+
+                    return UsersOut(users=list(users))
         except Exception:
             raise Exception("Failed to get all users")
 
@@ -113,7 +119,10 @@ class UserRepository:
                         """,
                         [user.username, user.email, password_hash],
                     )
-                    user_id = result.fetchone()[0]
+                    record = result.fetchone()
+                    if record is None:
+                        raise Exception("Failed to create the user")
+                    user_id = record[0]
                     return UserOutWithPassword(
                         id=user_id,
                         username=user.username,

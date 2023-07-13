@@ -38,21 +38,23 @@ router = APIRouter()
 @router.get("/api/protected", response_model=bool)
 async def get_token(
     request: Request,
-    user_data: dict = Depends(authenticator.get_current_account_data)
+    user_data: dict = Depends(authenticator.get_current_account_data),
 ):
     return True
+
 
 @router.get("/token", response_model=UserToken | None)
 async def get_token(
     request: Request,
-    user: UserOut = Depends(authenticator.try_get_current_account_data)
+    user: UserOut = Depends(authenticator.try_get_current_account_data),
 ):
     if user and authenticator.cookie_name in request.cookies:
         return {
             "access_token": request.cookies[authenticator.cookie_name],
             "type": "Bearer",
-            "user": user
+            "user": user,
         }
+
 
 @router.post("/signup", response_model=UserToken | HttpError)
 async def create_user(
@@ -83,9 +85,7 @@ async def get_all(
     user_data: dict = Depends(authenticator.get_current_account_data),
 ):
     if user_data:
-        return {
-            "users": repo.get_all()
-        }
+        return repo.get_all()
 
 
 @router.put("/users/{username}")
@@ -97,6 +97,9 @@ async def update_user(
     user_data: dict = Depends(authenticator.get_current_account_data),
 ):
     hashed_password = authenticator.hash_password(user.password)
+    existing_user = repo.get(username)
+    if existing_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
     if user_data:
         return repo.update(username, user, hashed_password)
 
@@ -104,9 +107,10 @@ async def update_user(
 @router.delete("/users/{username}", response_model=bool)
 async def delete_user(
     username: str,
-    repo: UserRepository = Depends(),
+    user_repo: UserRepository = Depends(),
 ) -> bool:
-    return repo.delete(username)
+    deleted = user_repo.delete(username)
+    return deleted
 
 
 @router.get("/users/{username}", response_model=Optional[UserOut])
