@@ -28,6 +28,10 @@ services:
       WAIT_HOSTS: postgres:5432
       CORS_HOST: http://localhost:3000
       SIGNING_KEY: ${SIGNING_KEY}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION}
+      AWS_BUCKET_NAME: ${AWS_BUCKET_NAME}
 
   ghi:
     image: node:lts-bullseye
