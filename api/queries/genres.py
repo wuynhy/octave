@@ -17,11 +17,8 @@ class GenreRepository:
 
     def get_one(self, genre_id: int) -> Optional[GenreOut]:
         try:
-            # connect the database
             with pool.connection() as conn:
-                # get a cursor (something to run SQL with)
                 with conn.cursor() as db:
-                    # Run our SELECT statement
                     result = db.execute(
                         """
                         SELECT id
@@ -29,23 +26,19 @@ class GenreRepository:
                         FROM genres
                         WHERE id = %s
                         """,
-                        [genre_id]
+                        [genre_id],
                     )
                     record = result.fetchone()
                     if record is None:
                         return None
                     return self.record_to_genre_out(record)
         except Exception as e:
-            print(e)
-            return {"message": "Could not get that genre"}
-        
+            raise Exception("Could not get the specific genre" + str(e))
+
     def get_all(self) -> List[GenreOut]:
         try:
-            # connect the database
             with pool.connection() as conn:
-                # get a cursor (something to run SQL with)
                 with conn.cursor() as db:
-                    # Run our SELECT statement
                     result = db.execute(
                         """
                         SELECT id, name
@@ -54,11 +47,7 @@ class GenreRepository:
                         """
                     )
                     return [
-                        self.record_to_genre_out(record)
-                        for record in result
+                        self.record_to_genre_out(record) for record in result
                     ]
         except Exception as e:
-            print(e)
-            return {"message": "Could not get all genres"}
-        
-            
+            raise Exception("Could not get all genres" + str(e))

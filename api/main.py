@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
-from routers import users, genres, songs, friends, songs
+from routers import users, genres, songs, friends
 from authenticator import authenticator
 
 app = FastAPI()

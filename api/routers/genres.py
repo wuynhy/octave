@@ -14,7 +14,7 @@ def get_one_genre(
     genre_id: int,
     response: Response,
     repo: GenreRepository = Depends(),
-) -> GenreOut:
+) -> Optional[GenreOut]:
     genre = repo.get_one(genre_id)
     if genre is None:
         response.status_code = 404
