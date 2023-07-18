@@ -1,4 +1,4 @@
-FROM python:3.10-bullseye
+FROM python:3.9-bullseye
 RUN apt-get update && \
     apt-get install -y git nano unzip && \
     curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip" && \
@@ -15,4 +15,3 @@ WORKDIR /app
 COPY aws-config.sh /app/aws-config.sh
 RUN chmod +x /app/aws-config.sh
 CMD /wait && python -m migrations up && uvicorn main:app --reload --host 0.0.0.0
-

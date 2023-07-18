@@ -13,22 +13,22 @@ const LoginForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-        await login(username, password);
-        e.target.reset();
+      await login(username, password);
+      e.target.reset();
     } catch (err) {
-        console.log(err);
+      console.log(err);
     }
   };
 
   useEffect(() => {
     if (token) {
-        navigate("/");
+      navigate("/");
     }
-    }, [token]);
+  }, [token, navigate]);
 
   const toggle = () => {
     setShow(!show);
-  }
+  };
 
   const handleUsernameChange = (e) => {
     setUsername(e.target.value);

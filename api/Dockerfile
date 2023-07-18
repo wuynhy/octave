@@ -1,4 +1,4 @@
-FROM python:3.10-bullseye
+FROM python:3.9-bullseye
 RUN python -m pip install --upgrade pip
 WORKDIR /app
 COPY requirements.txt requirements.txt

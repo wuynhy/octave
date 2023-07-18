@@ -12,3 +12,20 @@
   font-size: calc(10px + 2vmin);
   color: white;
 }
+.book-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2em;
+}
+
+@media screen and (max-width: 800px) {
+  .book-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media screen and (max-width: 640px) {
+  .book-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

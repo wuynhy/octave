@@ -3,6 +3,7 @@ from importlib import import_module
 from itertools import zip_longest
 import os.path
 from pathlib import Path
+from typing import Optional
 
 from psycopg import AsyncConnection
 from psycopg.rows import class_row
@@ -31,7 +32,7 @@ class MigrationRecord(BaseModel):
 
 class MigrationStep(BaseModel):
     up: str
-    down: str | None
+    down: Optional[str]
 
 
 class MigrationFile(MigrationRecord):

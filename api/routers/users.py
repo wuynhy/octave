@@ -6,7 +6,7 @@ from fastapi import (
     APIRouter,
     Request,
 )
-from typing import Optional
+from typing import Optional, Union
 from jwtdown_fastapi.authentication import Token
 from authenticator import authenticator
 from pydantic import BaseModel
@@ -43,7 +43,7 @@ async def get_token(
     return True
 
 
-@router.get("/token", response_model=UserToken | None)
+@router.get("/token", response_model=Optional[UserToken])
 async def get_token(
     request: Request,
     user: UserOut = Depends(authenticator.try_get_current_account_data),
@@ -56,7 +56,7 @@ async def get_token(
         }
 
 
-@router.post("/signup", response_model=UserToken | HttpError)
+@router.post("/signup", response_model=Union[UserToken, HttpError])
 async def create_user(
     user_info: UserIn,
     request: Request,
