@@ -5,7 +5,6 @@ import os
 from botocore.exceptions import NoCredentialsError
 import boto3
 from fastapi import UploadFile, HTTPException
-from .users import UserOut
 import uuid
 
 
