@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import useToken from "@galvanize-inc/jwtdown-for-react";
 import jwt_decode from "jwt-decode";
 import { useParams } from "react-router-dom";
@@ -8,6 +8,7 @@ function ChatRoom(props) {
   const [socket, setSocket] = useState();
   const [chats, setChats] = useState([]);
   const { id: stageId } = useParams();
+  const messagesEndRef = useRef(null);
 
   const auth = useToken();
 
@@ -45,9 +46,7 @@ function ChatRoom(props) {
       );
       if (res.ok) {
         const results = await res.json();
-        {
-          setChats(results);
-        }
+        setChats(results);
       }
     };
     getChats();
@@ -98,47 +97,45 @@ function ChatRoom(props) {
     setInput("");
   };
 
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(scrollToBottom, [chats]);
+
   return (
-    <div className="container my-4">
-      <p>Welcome to stage {stageId}</p>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "flex-start",
-          width: "60%",
-          margin: "auto",
-        }}
-      >
-        {chats.map((c, index) => (
-          <div
-            key={index}
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              justifyContent:
-                c.sender_id === senderId ? "flex-end" : "flex-start",
-            }}
-          >
-            {c.sender_id !== senderId && (
-              <div>{c.username || "Unknown User"}&nbsp;: </div>
-            )}
+    <div className="flex justify-end h-screen m-0 p-0">
+      <div className="chat-room w-full h-full flex flex-col p-4">
+        <div className="chat-container flex flex-col flex-grow overflow-y-auto mb-4">
+          {chats.map((c, index) => (
             <div
-              style={{
-                backgroundColor: c.sender_id === senderId ? "black" : "inherit",
-              }}
+              key={index}
+              className={
+                c.sender_id === senderId ? "chat chat-end" : "chat chat-start"
+              }
             >
-              {c.message}
+              {c.sender_id !== senderId && (
+                <div className="chat-header">
+                  {c.username || "Unknown User"}&nbsp;:{" "}
+                </div>
+              )}
+              <div className="chat-bubble chat-bubble-primary">{c.message}</div>
             </div>
-          </div>
-        ))}
-        <input
-          type="text"
-          value={input}
-          onChange={handleInputChange}
-          placeholder="New chat message"
-        />
-        <button onClick={handleSendChat}>Send</button>
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
+        <div className="input-container flex justify-center">
+          <input
+            type="text"
+            value={input}
+            onChange={handleInputChange}
+            placeholder="New chat message"
+            className="input input-bordered input-primary w-full max-w-xs mr-2"
+          />
+          <button className="btn btn-secondary ml-2" onClick={handleSendChat}>
+            Send
+          </button>
+        </div>
       </div>
     </div>
   );

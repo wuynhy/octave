@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { VscEyeClosed, VscEye } from "react-icons/vsc";
 
+
 const LoginForm = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -13,7 +14,7 @@ const LoginForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await login(username, password);
+      login(username, password);
       e.target.reset();
     } catch (err) {
       console.log(err);
@@ -22,7 +23,7 @@ const LoginForm = () => {
 
   useEffect(() => {
     if (token) {
-      navigate("/");
+      navigate("/home");
     }
   }, [token, navigate]);
 
@@ -101,7 +102,7 @@ const LoginForm = () => {
               </div>
             </div>
             <div className="text-sm">
-              <a href="/signup" className="text-green-400 hover:text-green-500">
+              <a href="/signup" className="text-purple-600 hover:text-purple-800">
                 Sign up here
               </a>
             </div>
@@ -109,7 +110,7 @@ const LoginForm = () => {
               <button
                 value="Sign in"
                 type="submit"
-                className="w-full flex justify-center bg-green-400  hover:bg-green-500 text-gray-100 p-3  rounded-full tracking-wide font-semibold  shadow-lg cursor-pointer transition ease-in duration-500"
+                className="w-full flex justify-center bg-purple-700  hover:bg-purple-900 text-gray-100 p-3  rounded-full tracking-wide font-semibold  shadow-lg cursor-pointer transition ease-in duration-500"
               >
                 Sign in
               </button>

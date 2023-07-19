@@ -11,7 +11,7 @@ const SignupForm = () => {
   const { register } = useToken();
   const navigate = useNavigate();
 
-  const handleRegistration = (e) => {
+  const handleRegistration = async (e) => {
     e.preventDefault();
     const accountData = {
       username: username,
@@ -107,7 +107,7 @@ const SignupForm = () => {
             </div>
             </div>
             <div className="text-sm">
-              <a href="/login" className="text-green-400 hover:text-green-500">
+              <a href="/login" className="text-purple-600 hover:text-purple-800">
                 Log In here
               </a>
             </div>
@@ -115,7 +115,7 @@ const SignupForm = () => {
               <button
                 value="Register"
                 type="submit"
-                className="w-full flex justify-center bg-green-400  hover:bg-green-500 text-gray-100 p-3  rounded-full tracking-wide font-semibold  shadow-lg cursor-pointer transition ease-in duration-500"
+                className="w-full flex justify-center bg-purple-700 hover:bg-purple-900 text-gray-100 p-3  rounded-full tracking-wide font-semibold  shadow-lg cursor-pointer transition ease-in duration-500"
               >
                 Sign Up
               </button>
