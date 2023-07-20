@@ -28,7 +28,7 @@ class PlaylistOut(BaseModel):
     name: str
     description: Optional[str] = None
     owner: str
-    songs: List[str] = []  # Add the songs field
+    songs: List[str] = []
     cover: Optional[str] = None
 
 
@@ -79,11 +79,10 @@ class PlaylistRepository:
                             songs=record[4].split(",") if record[4] else [],
                             cover=record[5],
                         )
-                    return None  # If no playlist is found, return None
+                    return None
         except Exception as e:
             print(f"Error fetching playlist: {e}")
-            return None  # Return None on error
-
+            return None
 
     def get_all_playlists(self) -> List[PlaylistOut]:
         try:
@@ -163,7 +162,7 @@ class PlaylistRepository:
                                 [playlist_id, song],
                             )
 
-            # After inserting the playlist, fetch the details and return the PlaylistOut object
+
             return self.get_playlist_by_id(playlist_id)
         except Exception as e:
             print(f"Error creating playlist: {e}")
@@ -177,11 +176,11 @@ class PlaylistRepository:
             if existing_playlist is None:
                 return Error(message="Playlist not found")
 
-            if playlist.cover:  # If a new cover image is provided
+            if playlist.cover:
                 cover_key_name = f"{uuid.uuid4().hex}-{playlist.cover.filename}"
-                self.s3_client.upload_fileobj(playlist.cover.file, self.bucket_name, cover_key_name)  # Upload to S3
+                self.s3_client.upload_fileobj(playlist.cover.file, self.bucket_name, cover_key_name)
                 cover_file = f"https://{self.bucket_name}.s3.{self.region_name}.amazonaws.com/{cover_key_name}"
-            else:  # If no new cover image is provided, use the existing cover image
+            else:
                 cover_file = existing_playlist.cover
 
             with pool.connection() as conn:

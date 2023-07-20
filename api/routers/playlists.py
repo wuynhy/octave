@@ -31,8 +31,7 @@ async def create_playlist(
     songs: Optional[str] = Form(None),
     repo: PlaylistRepository = Depends(PlaylistRepository),
 ):
-    print(type(cover))  # should print <class 'fastapi.datastructures.UploadFile'>
-    print(cover)  # should print an UploadFile object
+
 
 
     try:
