@@ -35,7 +35,6 @@ function App() {
             <Route exact path="/" element={<Main />}></Route>
             <Route exact path="/signup" element={<SignupForm />}></Route>
             <Route exact path="/login" element={<LoginForm />}></Route>
-
             <Route element={<PrivateRoutes />}>
               <Route exact path="/home" element={<Home />}></Route>
               <Route path="/stages/:id" element={<StageChatContainer />} />
