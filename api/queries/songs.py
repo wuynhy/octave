@@ -14,6 +14,7 @@ class Error(BaseModel):
 
 
 class SongIn(BaseModel):
+    uploader: int
     title: str
     artist: str
     music_file: UploadFile
@@ -37,6 +38,7 @@ class SongIn(BaseModel):
 
 class SongOut(BaseModel):
     id: int
+    uploader: str
     title: str
     artist: str
     music_file_url: str
@@ -104,6 +106,7 @@ class SongRepository:
     def record_to_song_out(self, record: dict, genres: List[str] = []) -> SongOut:
         return SongOut(
             id=record["id"],
+            uploader=record["uploader"],
             title=record["title"],
             artist=record["artist"],
             music_file_url=record["music_file"],
@@ -112,7 +115,7 @@ class SongRepository:
             genres=genres
         )
 
-    async def create(self, song: SongIn) -> Optional[SongOut]:
+    async def create(self, uploader: int, song: SongIn) -> Optional[SongOut]:
         try:
             if song.music_file.filename is not None:
                 key_name = os.path.basename(song.music_file.filename)
@@ -139,11 +142,18 @@ class SongRepository:
                 with conn.cursor() as db:
                     db.execute(
                         """
-                        INSERT INTO songs (title, artist, music_file, cover, duration)
-                        VALUES (%s, %s, %s, %s, %s)
+                        SELECT id FROM users WHERE id = %s;
+                        """,
+                        [uploader],
+                    )
+                    db.execute(
+                        """
+                        INSERT INTO songs (uploader, title, artist, music_file, cover, duration)
+                        VALUES (%s, %s, %s, %s, %s, %s)
                         RETURNING id;
                         """,
                         [
+                            uploader,
                             song.title,
                             song.artist,
                             music_file,
@@ -169,23 +179,14 @@ class SongRepository:
 
             await self.upload_to_s3(temp_file, self.bucket_name, key_name)
             await self.upload_to_s3(temp_cover_file, self.bucket_name, cover_key_name)
-
-            return SongOut(
-                id=song_id,
-                title=song.title,
-                artist=song.artist,
-                music_file_url=music_file,
-                cover_url=cover_file,
-                duration=duration_seconds,
-                genres=song.genres
-            )
-
+            
+            return self.get(song_id)
         except Exception as e:
             print(f"Error creating song: {e}")
             return None
 
     async def update(
-        self, song_id: int, song: SongIn
+        self, uploader: int, song_id: int, song: SongIn
     ) -> Union[Error, SongOut]:
         try:
             existing_song = self.get(song_id)
@@ -256,10 +257,11 @@ class SongRepository:
                     db.execute(
                         """
                             UPDATE songs
-                            SET title = %s, artist = %s, music_file = %s, cover = %s, duration = %s
+                            SET  uploader = %s, title = %s, artist = %s, music_file = %s, cover = %s, duration = %s
                             WHERE id = %s
                             """,
                         [
+                            song.uploader,
                             song.title,
                             song.artist,
                             s3_file,
@@ -305,8 +307,7 @@ class SongRepository:
                 return False
             existing_song_key = existing_song.music_file_url.split("/")[-1]
             existing_cover_key = existing_song.cover_url.split("/")[-1]
-            print(existing_song_key)
-            print(existing_cover_key)
+
             self.delete_from_s3(existing_song_key)
             self.delete_from_s3(existing_cover_key)
 
@@ -330,12 +331,13 @@ class SongRepository:
                 with conn.cursor() as db:
                     db.execute(
                         """
-                        SELECT s.id, s.title, s.artist, s.music_file, s.cover, s.duration, string_agg(g.name, ', ')
+                        SELECT s.id, u.username as uploader, s.title, s.artist, s.music_file, s.cover, s.duration, string_agg(g.name, ', ')
                         FROM songs s
                         LEFT JOIN song_genres sg ON s.id = sg.song_id
                         LEFT JOIN genres g ON sg.genre_id = g.id
+                        LEFT JOIN users u ON s.uploader = u.id
                         WHERE s.id = %s
-                        GROUP BY s.id;
+                        GROUP BY s.id, u.username;
                         """,
                         [song_id],
                     )
@@ -344,12 +346,13 @@ class SongRepository:
                         return None
                     return SongOut(
                         id=record[0],
-                        title=record[1],
-                        artist=record[2],
-                        music_file_url=record[3],
-                        cover_url=record[4],
-                        duration=record[5],
-                        genres=record[6].split(', ') if record[6] else []
+                        uploader=record[1],
+                        title=record[2],
+                        artist=record[3],
+                        music_file_url=record[4],
+                        cover_url=record[5],
+                        duration=record[6],
+                        genres=record[7].split(', ') if record[7] else []
                     )
         except Exception as e:
             print(f"Error getting song: {e}")
@@ -361,11 +364,12 @@ class SongRepository:
                 with conn.cursor() as db:
                     db.execute(
                         """
-                        SELECT s.id, s.title, s.artist, s.music_file, s.cover, s.duration, string_agg(g.name, ', ')
+                        SELECT s.id, u.username as uploader, s.title,s.artist, s.music_file, s.cover, s.duration, string_agg(g.name, ', ')
                         FROM songs s
                         LEFT JOIN song_genres sg ON s.id = sg.song_id
                         LEFT JOIN genres g ON sg.genre_id = g.id
-                        GROUP BY s.id
+                        LEFT JOIN users u ON s.uploader = u.id
+                        GROUP BY s.id, u.username
                         ORDER BY s.id;
                         """
                     )
@@ -373,12 +377,13 @@ class SongRepository:
                     return [
                         SongOut(
                             id=record[0],
-                            title=record[1],
-                            artist=record[2],
-                            music_file_url=record[3],
-                            cover_url=record[4],
-                            duration=record[5],
-                            genres=record[6].split(', ') if record[6] else []
+                            uploader=record[1],
+                            title=record[2],
+                            artist=record[3],
+                            music_file_url=record[4],
+                            cover_url=record[5],
+                            duration=record[6],
+                            genres=record[7].split(', ') if record[7] else []
                         )
                         for record in result
                     ]

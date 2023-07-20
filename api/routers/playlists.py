@@ -130,7 +130,7 @@ async def update_playlist(
         )
 
 
-@router.delete("/playlists/{playlist_id}", response_model=bool)
+@router.delete("/playlists/{playlist_id}")
 def delete_playlist(
     playlist_id: int,
     user_data: dict = Depends(authenticator.get_current_account_data),

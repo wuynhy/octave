@@ -276,6 +276,13 @@ class PlaylistRepository:
                         ],
                     )
                     if playlist.songs is not None:
+                        db.execute(
+                            """
+                            DELETE FROM playlist_songs
+                            WHERE playlist_id = %s
+                            """,
+                            [playlist_id],
+                        )
                         for song in playlist.songs:
                             db.execute(
                                 """
@@ -294,7 +301,7 @@ class PlaylistRepository:
             print(f"Error updating playlist: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
 
-    def delete_playlist(self, playlist_id: int):
+    def delete_playlist(self, playlist_id: int) -> bool:
         try:
             existing_playlist = self.get_playlist_by_id(playlist_id)
             if existing_playlist is None:
