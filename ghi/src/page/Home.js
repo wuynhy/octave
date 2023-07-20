@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import useToken from "@galvanize-inc/jwtdown-for-react";
+import { Link } from "react-router-dom";
 
 const Home = () => {
   const [userData, setUserData] = useState({});
@@ -21,10 +22,12 @@ const Home = () => {
     handleUserData();
   }, []);
 
+  const username = userData.user ? userData.user.username : null;
+
   return (
     <>
       <h1 className="container mx-auto text-center text-4xl font-bold">
-        Hello, {userData.user ? userData.user.username : "Loading..."}!
+        Hello, {username ? username : "Loading..."}!
       </h1>
       <div className="container mx-auto text-center text-2xl font-bold">
         <button
@@ -33,6 +36,7 @@ const Home = () => {
         >
           Logout
         </button>
+        {username && <Link to={`/profile/${username}`}>Profile</Link>}
       </div>
     </>
   );

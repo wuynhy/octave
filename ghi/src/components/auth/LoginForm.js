@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { VscEyeClosed, VscEye } from "react-icons/vsc";
 
-
 const LoginForm = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -102,7 +101,10 @@ const LoginForm = () => {
               </div>
             </div>
             <div className="text-sm">
-              <a href="/signup" className="text-purple-600 hover:text-purple-800">
+              <a
+                href="/signup"
+                className="text-purple-600 hover:text-purple-800"
+              >
                 Sign up here
               </a>
             </div>
