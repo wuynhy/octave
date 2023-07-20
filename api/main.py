@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from typing import Optional
 import json
 import os
-from routers import users, genres, songs, friends, stages
+from routers import users, genres, songs, friends, stages, playlists
 from authenticator import authenticator
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
@@ -25,6 +25,7 @@ app.include_router(genres.router)
 app.include_router(songs.router)
 app.include_router(friends.router)
 app.include_router(stages.router)
+app.include_router(playlists.router)
 
 app.add_middleware(
     CORSMiddleware,
