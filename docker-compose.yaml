@@ -14,12 +14,13 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - 15432:5432
+
   api:
     build:
       context: ./api
       dockerfile: ./Dockerfile.dev
     ports:
-      - 8080:8000
+      - "8080:8000"
     volumes:
       - ./api:/app
     environment:
@@ -31,6 +32,7 @@ services:
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION}
       AWS_BUCKET_NAME: ${AWS_BUCKET_NAME}
+
   ghi:
     image: node:lts-bullseye
     command: /bin/bash run.sh
@@ -38,13 +40,15 @@ services:
     volumes:
       - ./ghi:/app
     ports:
-      - 3000:3000
+      - "3000:3000"
     environment:
       HOST_OS: ${OS}
       NODE_ENV: development
       HOST: "0.0.0.0"
       PUBLIC_URL: http://localhost:3000
       REACT_APP_API_HOST: ${REACT_APP_API_HOST}
+      REACT_APP_WS_HOST: ${REACT_APP_WS_HOST}
+
   pg-admin:
     image: dpage/pgadmin4
     volumes:
