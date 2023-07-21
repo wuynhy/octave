@@ -2,12 +2,18 @@ import { useState, useEffect, useCallback } from "react";
 import useToken from "@galvanize-inc/jwtdown-for-react";
 import { Link, useParams } from "react-router-dom";
 import jwt_decode from "jwt-decode";
+import { useSelector } from "react-redux";
+import { useGetAllSongsQuery } from "../../redux/services/musicPlayerApi";
+import SongCard from "../SongCard";
+import Loader from "../Loader";
+import Error from "../Error";
 
 const ProfilePage = () => {
   const { token } = useToken();
   const [user, setUser] = useState(null);
   const { username } = useParams();
   const [activeTab, setActiveTab] = useState("Songs");
+  const { data: userSongs, isFetching, error } = useGetAllSongsQuery();
 
   const handleUserData = useCallback(async () => {
     const response = await fetch(`http://localhost:8080/users/${username}`, {
@@ -39,7 +45,16 @@ const ProfilePage = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case "Songs":
-        return <div>Songs content</div>;
+        if (isFetching) return <Loader title="Loading songs..." />;
+        if (error) return <Error />;
+
+        return (
+          <div className="flex flex-wrap sm:justify-start justify-center gap-8">
+            {userSongs?.map((song, i) => (
+              <SongCard key={song.id} song={song} />
+            ))}
+          </div>
+        );
       case "Playlists":
         return <div>Playlists content</div>;
       case "Stages":
