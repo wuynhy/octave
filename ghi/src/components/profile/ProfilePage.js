@@ -16,11 +16,20 @@ const ProfilePage = () => {
   const { data: userSongs, isFetching, error } = useGetAllSongsQuery();
 
   const handleUserData = useCallback(async () => {
-    const response = await fetch(`http://localhost:8080/users/${username}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const userData = await response.json();
-    setUser(userData);
+    try {
+      const response = await fetch(`http://localhost:8080/users/${username}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+      } else {
+        throw new Error("Failed to fetch user data.");
+      }
+    } catch (err) {
+      console.error("Error fetching user data:", err);
+    }
   }, [username, token]);
 
   useEffect(() => {
@@ -30,13 +39,11 @@ const ProfilePage = () => {
   const decodedToken = jwt_decode(token);
   const currentUser = decodedToken.account.username;
 
-  let userUsername = user && user.username ? user.username : "Loading...";
-  let avatar = user && user.avatar ? user.avatar : "Loading...";
-  let bio = user && user.bio ? user.bio : "Loading...";
-  let friends_count =
-    user && user.friends_count !== undefined ? user.friends_count : 0;
-  let following_count =
-    user && user.following_count !== undefined ? user.following_count : 0;
+  let userUsername = user?.username || "Loading...";
+  let avatar = user?.avatar || "Loading...";
+  let bio = user?.bio || "Loading...";
+  let friends_count = user?.friends_count || 0;
+  let following_count = user?.following_count || 0;
 
   const handleTabClick = (tab) => {
     setActiveTab(tab);
@@ -47,10 +54,9 @@ const ProfilePage = () => {
       case "Songs":
         if (isFetching) return <Loader title="Loading songs..." />;
         if (error) return <Error />;
-
         return (
           <div className="flex flex-wrap sm:justify-start justify-center gap-8">
-            {userSongs?.map((song, i) => (
+            {userSongs?.map((song) => (
               <SongCard key={song.id} song={song} />
             ))}
           </div>
@@ -112,7 +118,7 @@ const ProfilePage = () => {
             </svg>
           </div>
         </section>
-        <section className="relative pt-1 w-screen bg-blueGray-200 -mt-1/4 pb-690">
+        <section className="relative pt-1 w-screen bg-blueGray-200 -mt-1/4">
           <div className="container mx-auto px-4 pt-16">
             <div className="relative flex-col min-w-0 break-words bg-slate-600 w-full mb-6 shadow-xl rounded-lg -mt-64 ml-0">
               <div className="px-6">
