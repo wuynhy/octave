@@ -1,16 +1,11 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { useToken } from "@galvanize-inc/jwtdown-for-react";
 
 export const musicPlayerApi = createApi({
   reducerPath: "musicPlayerApi",
   baseQuery: fetchBaseQuery({
     baseUrl: "http://localhost:8080/",
-    prepareHeaders: (headers) => {
-      let token;
-      const auth = useToken();
-      if (auth && auth.token) {
-        token = auth.token;
-      }
+    prepareHeaders: (headers, { getState }) => {
+      const token = getState().auth.token;
       if (token) {
         return {
           ...headers,
