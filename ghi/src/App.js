@@ -1,5 +1,5 @@
 import { AuthProvider } from "@galvanize-inc/jwtdown-for-react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import LoginForm from "./components/auth/LoginForm";
 import SignupForm from "./components/auth/SignupForm";
 import Home from "./page/Home";
@@ -29,26 +29,24 @@ function App() {
 
   return (
     <div className="container">
-      <BrowserRouter basename={basename}>
-        <AuthProvider baseUrl={baseUrl}>
-          <Routes>
-            <Route exact path="/" element={<Main />}></Route>
-            <Route exact path="/signup" element={<SignupForm />}></Route>
-            <Route exact path="/login" element={<LoginForm />}></Route>
-            <Route element={<PrivateRoutes />}>
-              <Route exact path="/home" element={<Home />}></Route>
-              <Route path="/stages/:id" element={<StageChatContainer />} />
-              {/* <Route exact path="/songs" element={<ListSongs />}></Route> */}
-              {/* <Route exact path="/songs/upload" element={<UploadSong />}></Route> */}
-              <Route
-                exact
-                path="/profile/:username"
-                element={<ProfilePage />}
-              ></Route>
-            </Route>
-          </Routes>
-        </AuthProvider>
-      </BrowserRouter>
+      <AuthProvider baseUrl={baseUrl}>
+        <Routes>
+          <Route exact path="/" element={<Main />}></Route>
+          <Route exact path="/signup" element={<SignupForm />}></Route>
+          <Route exact path="/login" element={<LoginForm />}></Route>
+          <Route element={<PrivateRoutes />}>
+            <Route exact path="/home" element={<Home />}></Route>
+            <Route path="/stages/:id" element={<StageChatContainer />} />
+            {/* <Route exact path="/songs" element={<ListSongs />}></Route> */}
+            {/* <Route exact path="/songs/upload" element={<UploadSong />}></Route> */}
+            <Route
+              exact
+              path="/profile/:username"
+              element={<ProfilePage />}
+            ></Route>
+          </Route>
+        </Routes>
+      </AuthProvider>
     </div>
   );
 }
