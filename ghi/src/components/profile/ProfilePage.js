@@ -2,11 +2,11 @@ import { useState, useEffect, useCallback } from "react";
 import useToken from "@galvanize-inc/jwtdown-for-react";
 import { Link, useParams } from "react-router-dom";
 import jwt_decode from "jwt-decode";
-import { useSelector } from "react-redux";
 import { useGetAllSongsQuery } from "../../redux/services/musicPlayerApi";
 import SongCard from "../SongCard";
 import Loader from "../Loader";
 import Error from "../Error";
+import { useGetSongByIdQuery } from "../../redux/services/musicPlayerApi";
 
 const ProfilePage = () => {
   const { token } = useToken();

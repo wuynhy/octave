@@ -5,20 +5,36 @@ import { useDispatch } from "react-redux";
 import PlayPause from "./PlayPause";
 import { playPause, setActiveSong } from "../redux/features/playerSlice";
 
+import { useGetSongByIdQuery } from "../redux/services/musicPlayerApi";
+
 const SongCard = ({ song, isPlaying, activeSong, data, i }) => {
   const dispatch = useDispatch();
+  const { data: detailedSong } = useGetSongByIdQuery(song.id, {
+    skip: !activeSong || activeSong.id !== song.id,
+  });
+
+  const handleSongClick = () => {
+    if (!isPlaying || (activeSong && activeSong.id !== song.id)) {
+      handlePlayClick();
+    } else {
+      handlePauseClick();
+    }
+  };
 
   const handlePauseClick = () => {
     dispatch(playPause(false));
   };
 
   const handlePlayClick = () => {
-    dispatch(setActiveSong({ song, data, i }));
+    dispatch(setActiveSong({ song: detailedSong || song, data, i }));
     dispatch(playPause(true));
   };
 
   return (
-    <div className="flex flex-col w-[250px] p-4 bg-white/5 bg-opacity-80 backdrop-blur-sm animate-slideup rounded-lg cursor-pointer">
+    <div
+      className="flex flex-col w-[250px] p-4 bg-white/5 bg-opacity-80 backdrop-blur-sm animate-slideup rounded-lg cursor-pointer"
+      onClick={handleSongClick}
+    >
       <div className="relative w-full h-56 group">
         <div
           className={`absolute inset-0 justify-center items-center bg-black bg-opacity-50 group-hover:flex ${
