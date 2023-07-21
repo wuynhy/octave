@@ -6,7 +6,6 @@ import { useGetAllSongsQuery } from "../../redux/services/musicPlayerApi";
 import SongCard from "../SongCard";
 import Loader from "../Loader";
 import Error from "../Error";
-import { useGetSongByIdQuery } from "../../redux/services/musicPlayerApi";
 
 const ProfilePage = () => {
   const { token } = useToken();
