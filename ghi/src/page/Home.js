@@ -36,8 +36,11 @@ const Home = () => {
         >
           Logout
         </button>
-        {username && <Link to={`/profile/${username}`}>Profile</Link>}
-        <Link to={`/profile/test`}>Test</Link>
+        <p>{username && <Link to={`/profile/${username}`}>Profile</Link>}</p>
+        <p>
+          <Link to={`/profile/test`}>Test</Link>
+        </p>
+        <Link to={`/stages/1`}>Stages</Link>
       </div>
     </>
   );

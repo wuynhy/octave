@@ -6,13 +6,19 @@ import { useGetAllSongsQuery } from "../../redux/services/musicPlayerApi";
 import SongCard from "../SongCard";
 import Loader from "../Loader";
 import Error from "../Error";
+import { useAddFriendMutation } from "../../redux/services/musicPlayerApi";
+import { useDispatch } from "react-redux";
+import { setActiveSong } from "../../redux/features/playerSlice";
 
 const ProfilePage = () => {
+  const dispatch = useDispatch();
   const { token } = useToken();
   const [user, setUser] = useState(null);
   const { username } = useParams();
   const [activeTab, setActiveTab] = useState("Songs");
-  const { data: userSongs, isFetching, error } = useGetAllSongsQuery();
+  const { data: allSongs, isFetching, error } = useGetAllSongsQuery();
+  const userSongs = allSongs || [];
+  const [addFriend, { isLoading, isError }] = useAddFriendMutation();
 
   const handleUserData = useCallback(async () => {
     try {
@@ -22,6 +28,7 @@ const ProfilePage = () => {
 
       if (response.ok) {
         const userData = await response.json();
+        console.log("Raw Response Data:", userData);
         setUser(userData);
       } else {
         throw new Error("Failed to fetch user data.");
@@ -48,6 +55,12 @@ const ProfilePage = () => {
     setActiveTab(tab);
   };
 
+  useEffect(() => {
+    dispatch(setActiveSong(null));
+  }, []);
+
+  console.log("User Data", user);
+
   const renderTabContent = () => {
     switch (activeTab) {
       case "Songs":
@@ -55,8 +68,13 @@ const ProfilePage = () => {
         if (error) return <Error />;
         return (
           <div className="flex flex-wrap sm:justify-start justify-center gap-8">
-            {userSongs?.map((song) => (
-              <SongCard key={song.id} song={song} />
+            {userSongs?.map((song, index) => (
+              <SongCard
+                key={song.id}
+                song={song}
+                allSongs={userSongs}
+                i={index}
+              />
             ))}
           </div>
         );
@@ -150,6 +168,7 @@ const ProfilePage = () => {
                         <button
                           className="bg-pink-500 active:bg-pink-600 uppercase text-white font-bold hover:shadow-md shadow text-xs px-4 py-2 rounded outline-none focus:outline-none sm:mr-2 mb-1 ease-linear transition-all duration-150"
                           type="button"
+                          onClick={() => addFriend(username)}
                         >
                           Add Friend
                         </button>
