@@ -28,7 +28,6 @@ const ProfilePage = () => {
 
       if (response.ok) {
         const userData = await response.json();
-        console.log("Raw Response Data:", userData);
         setUser(userData);
       } else {
         throw new Error("Failed to fetch user data.");
@@ -58,8 +57,6 @@ const ProfilePage = () => {
   useEffect(() => {
     dispatch(setActiveSong(null));
   }, []);
-
-  console.log("User Data", user);
 
   const renderTabContent = () => {
     switch (activeTab) {
