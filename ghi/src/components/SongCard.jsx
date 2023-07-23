@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 
@@ -14,23 +14,29 @@ const SongCard = ({ song, isPlaying, activeSong, allSongs, i }) => {
 
   const songIndex = allSongs.findIndex((s) => s.id === song.id);
 
+  const isProcessing = useRef(false);
+
   const handleSongClick = () => {
-    console.log("Active Song:", activeSong);
-    console.log("Current Song ID:", song.id);
+    if (isProcessing.current) {
+      return;
+    }
+
+    isProcessing.current = true;
     if (!isPlaying || (activeSong && activeSong.id !== song.id)) {
       handlePlayClick();
     } else {
       handlePauseClick();
     }
+    setTimeout(() => {
+      isProcessing.current = false;
+    }, 300);
   };
 
   const handlePauseClick = () => {
-    console.log("Pause clicked!");
     dispatch(playPause(false));
   };
 
   const handlePlayClick = () => {
-    console.log("Play clicked!");
     const nextSong =
       songIndex < allSongs.length - 1 ? allSongs[songIndex + 1] : allSongs[0];
     const prevSong =
