@@ -16,39 +16,27 @@ const playerSlice = createSlice({
   reducers: {
     setActiveSong: (state, action) => {
       state.activeSong = action.payload.song;
-
-      if (action.payload?.data?.tracks?.hits) {
-        state.currentSongs = action.payload.data.tracks.hits;
-      } else if (action.payload?.data?.properties) {
-        state.currentSongs = action.payload?.data?.tracks;
-      } else {
-        state.currentSongs = action.payload.data;
-      }
-
+      state.currentSongs = action.payload.data; // directly set the songs array
       state.currentIndex = action.payload.i;
       state.isActive = true;
     },
 
-    nextSong: (state, action) => {
-      if (state.currentSongs[action.payload]?.track) {
-        state.activeSong = state.currentSongs[action.payload]?.track;
-      } else {
-        state.activeSong = state.currentSongs[action.payload];
-      }
-
-      state.currentIndex = action.payload;
-      state.isActive = true;
+    nextSong: (state) => {
+      let nextIndex = state.currentIndex + 1;
+      if (nextIndex < state.currentSongs.duration) {
+        state.activeSong = state.currentSongs[nextIndex];
+        state.currentIndex = nextIndex;
+        state.isActive = true;
+      } // Optionally loop back to the start or handle according to your requirements
     },
 
-    prevSong: (state, action) => {
-      if (state.currentSongs[action.payload]?.track) {
-        state.activeSong = state.currentSongs[action.payload]?.track;
-      } else {
-        state.activeSong = state.currentSongs[action.payload];
-      }
-
-      state.currentIndex = action.payload;
-      state.isActive = true;
+    prevSong: (state) => {
+      let prevIndex = state.currentIndex - 1;
+      if (prevIndex >= 0) {
+        state.activeSong = state.currentSongs[prevIndex];
+        state.currentIndex = prevIndex;
+        state.isActive = true;
+      } // Optionally loop back to the end or handle according to your requirements
     },
 
     playPause: (state, action) => {

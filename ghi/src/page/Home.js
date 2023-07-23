@@ -37,6 +37,7 @@ const Home = () => {
           Logout
         </button>
         {username && <Link to={`/profile/${username}`}>Profile</Link>}
+        <Link to={`/profile/test`}>Test</Link>
       </div>
     </>
   );
