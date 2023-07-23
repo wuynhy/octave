@@ -60,20 +60,24 @@ class UserRepository:
         try:
             with pool.connection() as conn:
                 with conn.cursor() as db:
-                    result = db.execute(
+                    db.execute(
                         """
-                        SELECT id, username, email, avatar, bio, friends_count, following_count, password_hash
-                        FROM users
-                        WHERE username = %s;
+                        SELECT u.id, u.username, u.email, u.avatar, u.bio,
+                        (SELECT COUNT(*) FROM friendships WHERE (user_id = u.id OR friend_id = u.id) AND status = 'accepted') AS friends_count,
+                        (SELECT COUNT(*) FROM friendships WHERE user_id = u.id AND status = 'pending') AS following_count,
+                        u.password_hash
+                        FROM users AS u
+                        WHERE u.username = %s;
                         """,
                         [username],
                     )
-                    record = result.fetchone()
+                    record = db.fetchone()
                     if record is None:
                         return None
                     return self.record_to_user_out(record)
         except Exception:
             raise Exception("Failed to get user")
+
 
     def get_all(self) -> UsersOut:
         try:
