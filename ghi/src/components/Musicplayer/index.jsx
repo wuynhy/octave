@@ -73,6 +73,17 @@ const MusicPlayer = () => {
     }
   };
 
+  const handleSeekTimeChange = (newTime) => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = newTime;
+      setAppTime(newTime);
+    }
+  };
+
+  const handleSeekbarChange = (newValue) => {
+    handleSeekTimeChange(newValue);
+  };
+
   return (
     <>
       <audio
@@ -103,11 +114,10 @@ const MusicPlayer = () => {
           />
           <Seekbar
             value={appTime}
-            min="0"
             max={duration}
-            onInput={(event) => setSeekTime(event.target.value)}
-            setSeekTime={setSeekTime}
-            appTime={appTime}
+            onInput={handleSeekbarChange}
+            setSeekTime={handleSeekTimeChange}
+            maxDuration={duration}
           />
           <Player
             activeSong={activeSong}
