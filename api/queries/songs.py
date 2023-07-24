@@ -78,10 +78,8 @@ class SongRepository:
             response = self.s3_client.upload_file(
                 temp, bucket, object_name
             )
-            print("Upload Successful")
             return True
         except NoCredentialsError:
-            print("Credentials not available")
             return False
         except Exception as e:
             print(f"Error uploading file to S3: {e}")

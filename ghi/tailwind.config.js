@@ -55,7 +55,9 @@ module.exports = {
           xl: "1280px",
           xxl: "1440px",
           xxxl: "1536px",
-          xxxxl: "1920px",
+          xxxxl: "1680px",
+          xxxxxl: "1800px",
+          xxxxxxl: "1920px",
         },
       },
       margin: {

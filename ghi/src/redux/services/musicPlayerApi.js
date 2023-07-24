@@ -60,12 +60,6 @@ export const musicPlayerApi = createApi({
         method: "DELETE",
       }),
     }),
-    addFriend: builder.mutation({
-      query: (username) => ({
-        url: `friends/add/${username}`,
-        method: "POST",
-      }),
-    }),
   }),
 });
 
@@ -75,5 +69,4 @@ export const {
   useCreateSongMutation,
   useUpdateSongMutation,
   useDeleteSongMutation,
-  useAddFriendMutation,
 } = musicPlayerApi;

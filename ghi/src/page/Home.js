@@ -25,7 +25,7 @@ const Home = () => {
   const username = userData.user ? userData.user.username : null;
 
   return (
-    <>
+    <div className="container mx-auto text-center text-2xl font-bold">
       <h1 className="container mx-auto text-center text-4xl font-bold">
         Hello, {username ? username : "Loading..."}!
       </h1>

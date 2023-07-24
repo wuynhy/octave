@@ -32,26 +32,14 @@ const MusicPlayer = () => {
     if (currentSongs.length) dispatch(playPause(true));
   }, [currentIndex]);
 
-  useEffect(() => {
-    if (isPlaying) {
-      audioRef.current.play().catch((error) => {
-        console.error("Playback error:", error);
-        dispatch(playPause(false));
-      });
-    } else {
-      audioRef.current.pause();
-    }
-  }, [isPlaying]);
-
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume;
-    }
-  }, [volume]);
-
   const handlePlayPause = () => {
     if (!isActive) return;
-    dispatch(playPause(!isPlaying));
+
+    if (isPlaying) {
+      dispatch(playPause(false));
+    } else {
+      dispatch(playPause(true));
+    }
   };
 
   const handleNextSong = () => {
@@ -73,27 +61,23 @@ const MusicPlayer = () => {
     }
   };
 
-  const handleSeekTimeChange = (newTime) => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = newTime;
-      setAppTime(newTime);
-    }
-  };
-
-  const handleSeekbarChange = (newValue) => {
-    handleSeekTimeChange(newValue);
-  };
-
   return (
     <>
       <audio
         ref={audioRef}
         src={activeSong?.music_file_url}
         onEnded={handleNextSong}
-        onTimeUpdate={(event) => setAppTime(event.target.currentTime)}
-        onLoadedData={(event) => setDuration(event.target.duration)}
       />
-      <div className="relative sm:px-12 px-8 w-full flex items-center justify-between">
+      <div
+        className="relative sm:px-12 px-8 w-full flex items-center justify-between"
+        style={{
+          position: "fixed",
+          bottom: 0,
+          zIndex: 999,
+          height: "100px",
+          backgroundColor: "#000a27",
+        }}
+      >
         <Track
           isPlaying={isPlaying}
           isActive={isActive}
@@ -114,10 +98,11 @@ const MusicPlayer = () => {
           />
           <Seekbar
             value={appTime}
+            min="0"
             max={duration}
-            onInput={handleSeekbarChange}
-            setSeekTime={handleSeekTimeChange}
-            maxDuration={duration}
+            onInput={(event) => setSeekTime(event.target.value)}
+            setSeekTime={setSeekTime}
+            appTime={appTime}
           />
           <Player
             activeSong={activeSong}
@@ -126,6 +111,9 @@ const MusicPlayer = () => {
             seekTime={seekTime}
             repeat={repeat}
             currentIndex={currentIndex}
+            onEnded={handleNextSong}
+            onTimeUpdate={(event) => setAppTime(event.target.currentTime)}
+            onLoadedData={(event) => setDuration(event.target.duration)}
           />
         </div>
         <VolumeBar
