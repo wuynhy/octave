@@ -25,8 +25,6 @@ function FriendsTabComponent() {
       })
         .then((response) => response.json())
         .then((data) => {
-          console.log("Raw data from server:", data);
-
           const acceptedFriends = data
             .filter(
               (f) =>
@@ -43,19 +41,16 @@ function FriendsTabComponent() {
                     : friend.user_username,
               };
             })
-            .filter(Boolean); // Filter out any undefined or null items
-
-          console.log("Accepted friends:", acceptedFriends);
+            .filter(Boolean);
           setFriends(acceptedFriends);
 
           const pendingRequests = data
             .filter(
               (f) => f.friend_id === currentUserID && f.status === "pending"
             )
-            .filter(Boolean); // Filter out any undefined or null items
+            .filter(Boolean);
 
           setFriendRequests(pendingRequests);
-          console.log("Pending friends:", pendingRequests);
         });
     }
   };
@@ -65,7 +60,6 @@ function FriendsTabComponent() {
   }, [currentUserID, auth.token]);
 
   const acceptRequest = (friendUsername) => {
-    console.log("Accepting request from:", friendUsername);
     fetch(`${process.env.REACT_APP_API_HOST}/friendships/${friendUsername}/`, {
       method: "PUT",
       headers: {
@@ -106,22 +100,17 @@ function FriendsTabComponent() {
         }
       });
   };
-  console.log("Friends before rendering:", friends);
 
   return (
     <div className="friends-tab-container">
-      {/* Render each friend's details */}
       <div className="friends-list">
         {friends.map((friend, index) => (
           <div key={index}>{friend?.username}</div>
         ))}
       </div>
-
-      {/* Render each friend request's details */}
       <div className="friend-requests-list">
         {friendRequests.map((request, index) => (
           <div key={index}>
-            {/* friend request details */}
             <button onClick={() => acceptRequest(request.user_username)}>
               {request.user_username} Requested Friendship:{" "}
               <span style={{ color: "lightblue" }}>Accept</span> or
