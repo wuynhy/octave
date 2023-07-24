@@ -104,6 +104,7 @@ function FriendsTabComponent() {
   return (
     <div className="friends-tab-container">
       <div className="friends-list">
+        <h1 className="friends-title">Friends</h1>
         {friends.map((friend, index) => (
           <div key={index}>{friend?.username}</div>
         ))}

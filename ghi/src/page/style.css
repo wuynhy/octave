@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Raleway:wght@900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Raleway:wght@900&display=swap");
 
 .index {
   background-color: #fce9b0;
@@ -152,7 +152,7 @@
 .index .button-alternate-instance {
   color: var(--day-vibe) !important;
   font-size: 23px;
-  font-family: 'Raleway', sans-serif;
+  font-family: "Raleway", sans-serif;
   font-style: var(--h-1-font-style) !important;
   letter-spacing: var(--h-1-letter-spacing) !important;
   line-height: var(--h-1-line-height) !important;
@@ -160,7 +160,6 @@
   width: 68% !important;
   margin: auto;
 }
-
 
 .index .button-alternate-default-instance {
   border-radius: 14px !important;
@@ -170,5 +169,12 @@
 
 .index .button-alternate-default-instance:hover {
   background-color: #cd4a6c !important;
-  transition: background-color 0.3s ease; 
+  transition: background-color 0.3s ease;
+}
+
+.friends-title {
+  font-weight: bold;
+  font-size: 30px;
+  padding-bottom: 10px; /* Space between text and bottom border */
+  margin-bottom: 10px; /* Optional: Creates space between the title and the list */
 }
