@@ -42,7 +42,7 @@ const Home = () => {
         </p>
         <Link to={`/stages/1`}>Stages</Link>
       </div>
-    </>
+    </div>
   );
 };
 

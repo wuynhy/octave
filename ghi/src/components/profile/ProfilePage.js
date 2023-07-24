@@ -23,12 +23,28 @@ const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState("Songs");
   const { data: allSongs, isFetching, error } = useGetAllSongsQuery();
   const userSongs = allSongs || [];
-  const [addFriend, { isLoading, isError }] = useAddFriendMutation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
   const [searchUsername, setSearchUsername] = useState("");
   const navigate = useNavigate();
   const [userNotFound, setUserNotFound] = useState(false);
+
+  const addFriend = (friendUsername) => {
+    fetch(`${process.env.REACT_APP_API_HOST}/friendships/${friendUsername}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((response) => response.json())
+      .then((friendshipCreated) => {
+        if (friendshipCreated) {
+          alert("Friend request sent successfully!");
+        } else {
+          alert("Failed to send friend request.");
+        }
+      });
+  };
 
   const ModalContent = ({ formType, onClose }) => {
     let formContent;
@@ -71,22 +87,7 @@ const ProfilePage = () => {
       </div>
     );
   };
-  const addFriend = (friendUsername) => {
-    fetch(`${process.env.REACT_APP_API_HOST}/friendships/${friendUsername}`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((response) => response.json())
-      .then((friendshipCreated) => {
-        if (friendshipCreated) {
-          alert("Friend request sent successfully!");
-        } else {
-          alert("Failed to send friend request.");
-        }
-      });
-  };
+
   const handleUserData = useCallback(async () => {
     try {
       const response = await fetch(
@@ -297,7 +298,7 @@ const ProfilePage = () => {
                         <button
                           className="bg-pink-500 active:bg-pink-600 uppercase text-white font-bold hover:shadow-md shadow text-xs px-4 py-2 rounded outline-none focus:outline-none sm:mr-2 mb-1 ease-linear transition-all duration-150"
                           type="button"
-                          onClick={() => username}
+                          onClick={() => addFriend(username)}
                         >
                           Add Friend
                         </button>
