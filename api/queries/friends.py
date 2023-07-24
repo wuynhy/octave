@@ -16,7 +16,9 @@ class FriendshipIn(BaseModel):
 class FriendshipOut(BaseModel):
     id: int
     user_id: int
+    user_username: str
     friend_id: int
+    friend_username: str
     status: str
 
 
@@ -203,9 +205,10 @@ class FriendshipRepository:
                 with conn.cursor() as db:
                     db.execute(
                         """
-                        SELECT f.id, f.user_id, f.friend_id, f.status
+                        SELECT f.id, f.user_id, u1.username as user_username, f.friend_id, u2.username as friend_username, f.status
                         FROM friendships AS f
-                        JOIN users AS u ON f.user_id = u.id
+                        JOIN users AS u1 ON f.user_id = u1.id
+                        JOIN users AS u2 ON f.friend_id = u2.id
                         """
                     )
                     friendships = []
@@ -213,8 +216,14 @@ class FriendshipRepository:
                         friendship = {
                             "id": row[0],
                             "user_id": row[1],
-                            "friend_id": row[2],
-                            "status": row[3],
+                            "user_username": row[
+                                2
+                            ],  # this captures the username for user_id
+                            "friend_id": row[3],
+                            "friend_username": row[
+                                4
+                            ],  # this captures the username for friend_id
+                            "status": row[5],
                         }
                         friendships.append(friendship)
                     return friendships

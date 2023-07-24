@@ -9,6 +9,8 @@ import Error from "../Error";
 import { useAddFriendMutation } from "../../redux/services/musicPlayerApi";
 import { useDispatch } from "react-redux";
 import { setActiveSong } from "../../redux/features/playerSlice";
+import FriendsTabComponent from "../friends/FriendsTabComponent";
+import ErrorBoundary from "../friends/ErrorBoundary";
 
 const ProfilePage = () => {
   const dispatch = useDispatch();
@@ -79,6 +81,12 @@ const ProfilePage = () => {
         return <div>Playlists content</div>;
       case "Stages":
         return <div>Stages content</div>;
+      case "Friends":
+        return (
+          <ErrorBoundary>
+            <FriendsTabComponent currentUserID={user?.id} token={token} />
+          </ErrorBoundary>
+        );
       default:
         return null;
     }
@@ -235,6 +243,17 @@ const ProfilePage = () => {
                       aria-selected="false"
                     >
                       Stages
+                    </a>
+                  </li>
+                  <li role="presentation">
+                    <a
+                      onClick={() => handleTabClick("Friends")}
+                      className="my-2 block border-x-0 border-b-2 border-t-0 border-transparent px-7 pt-4 text-xs font-medium uppercase leading-tight text-neutral-500 hover:isolate hover:border-transparent hover:bg-neutral-100 focus:isolate focus:border-transparent data-[te-nav-active]:border-primary data-[te-nav-active]:text-primary dark:text-neutral-400 dark:hover:bg-transparent dark:data-[te-nav-active]:border-primary-400 dark:data-[te-nav-active]:text-primary-400"
+                      role="tab"
+                      aria-controls="tabs-messages"
+                      aria-selected="false"
+                    >
+                      Friends
                     </a>
                   </li>
                 </ul>
