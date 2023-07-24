@@ -15,23 +15,7 @@ function FriendsTabComponent() {
     currentUserID = decodedToken?.account?.id || null;
   }
 
-  let userIdToUsernameMap = {};
-
-  const fetchUsernameByUserId = async (id, data) => {
-    const matchingFriendship = data.find(
-      (f) => f.user_id === id || f.friend_id === id
-    );
-    if (matchingFriendship) {
-      return matchingFriendship.user_id === id
-        ? matchingFriendship.user_username
-        : matchingFriendship.friend_username;
-    } else {
-      console.error(`Could not find username for user ID: ${id}`);
-      return null;
-    }
-  };
-
-  useEffect(() => {
+  const fetchFriendshipData = () => {
     if (currentUserID) {
       fetch(`${process.env.REACT_APP_API_HOST}/friendships`, {
         method: "GET",
@@ -40,44 +24,48 @@ function FriendsTabComponent() {
         },
       })
         .then((response) => response.json())
-        .then(async (data) => {
-          const acceptedFriends = data.filter(
-            (f) =>
-              (f.user_id === currentUserID || f.friend_id === currentUserID) &&
-              f.status === "accepted"
-          );
+        .then((data) => {
+          console.log("Raw data from server:", data);
 
-          for (let friend of acceptedFriends) {
-            const friendId =
-              friend.user_id === currentUserID
-                ? friend.friend_id
-                : friend.user_id;
-            if (!userIdToUsernameMap[friendId]) {
-              const username = await fetchUsernameByUserId(friendId, data);
-              userIdToUsernameMap[friendId] = username;
-            }
-            friend.username = userIdToUsernameMap[friendId];
-          }
+          const acceptedFriends = data
+            .filter(
+              (f) =>
+                (f.user_id === currentUserID ||
+                  f.friend_id === currentUserID) &&
+                f.status === "accepted"
+            )
+            .map((friend) => {
+              return {
+                ...friend,
+                username:
+                  friend.user_id === currentUserID
+                    ? friend.friend_username
+                    : friend.user_username,
+              };
+            })
+            .filter(Boolean); // Filter out any undefined or null items
 
+          console.log("Accepted friends:", acceptedFriends);
           setFriends(acceptedFriends);
 
-          const pendingRequests = data.filter(
-            (f) => f.friend_id === currentUserID && f.status === "pending"
-          );
-
-          for (let request of pendingRequests) {
-            request.username = await fetchUsernameByUserId(
-              request.user_id,
-              data
-            );
-          }
+          const pendingRequests = data
+            .filter(
+              (f) => f.friend_id === currentUserID && f.status === "pending"
+            )
+            .filter(Boolean); // Filter out any undefined or null items
 
           setFriendRequests(pendingRequests);
+          console.log("Pending friends:", pendingRequests);
         });
     }
+  };
+
+  useEffect(() => {
+    fetchFriendshipData();
   }, [currentUserID, auth.token]);
 
   const acceptRequest = (friendUsername) => {
+    console.log("Accepting request from:", friendUsername);
     fetch(`${process.env.REACT_APP_API_HOST}/friendships/${friendUsername}/`, {
       method: "PUT",
       headers: {
@@ -88,12 +76,13 @@ function FriendsTabComponent() {
       .then((accepted) => {
         if (accepted) {
           const request = friendRequests.find(
-            (req) => req.friend_id === friendUsername
+            (req) => req.friend_username === friendUsername
           );
           setFriendRequests((prevRequests) =>
-            prevRequests.filter((f) => f.friend_id !== friendUsername)
+            prevRequests.filter((f) => f.friend_username !== friendUsername)
           );
           setFriends((prevFriends) => [...prevFriends, request]);
+          fetchFriendshipData();
         }
       });
   };
@@ -117,13 +106,14 @@ function FriendsTabComponent() {
         }
       });
   };
+  console.log("Friends before rendering:", friends);
 
   return (
     <div className="friends-tab-container">
       {/* Render each friend's details */}
       <div className="friends-list">
         {friends.map((friend, index) => (
-          <div key={index}>{friend.username}</div>
+          <div key={index}>{friend?.username}</div>
         ))}
       </div>
 
@@ -132,10 +122,13 @@ function FriendsTabComponent() {
         {friendRequests.map((request, index) => (
           <div key={index}>
             {/* friend request details */}
-            <button onClick={() => acceptRequest(request.friend_id)}>
-              Accept
+            <button onClick={() => acceptRequest(request.user_username)}>
+              {request.user_username} Requested Friendship:{" "}
+              <span style={{ color: "lightblue" }}>Accept</span> or
             </button>
-            <button onClick={() => denyRequest(request.friend_id)}>Deny</button>
+            <button onClick={() => denyRequest(request.user_username)}>
+              <span style={{ color: "red" }}>&nbsp;Deny</span>?
+            </button>
           </div>
         ))}
       </div>

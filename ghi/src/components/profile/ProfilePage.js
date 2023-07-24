@@ -20,7 +20,23 @@ const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState("Songs");
   const { data: allSongs, isFetching, error } = useGetAllSongsQuery();
   const userSongs = allSongs || [];
-  const [addFriend, { isLoading, isError }] = useAddFriendMutation();
+
+  const addFriend = (friendUsername) => {
+    fetch(`${process.env.REACT_APP_API_HOST}/friendships/${friendUsername}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((response) => response.json())
+      .then((friendshipCreated) => {
+        if (friendshipCreated) {
+          alert("Friend request sent successfully!");
+        } else {
+          alert("Failed to send friend request.");
+        }
+      });
+  };
 
   const handleUserData = useCallback(async () => {
     try {
