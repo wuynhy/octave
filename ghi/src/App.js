@@ -71,6 +71,16 @@ function App() {
                 path="/profile/:username/edit"
                 element={<EditProfile />}
               />
+              <Route path="/playlists/" element={<Playlists />} />
+              <Route
+                path="/playlists/:playlistId"
+                element={<PlaylistDetail />}
+              />
+              <Route path="/create_playlist" element={<CreatePlaylist />} />
+              <Route
+                path="/update-playlist/:playlistId"
+                element={<UpdatePlaylist />}
+              />
             </Route>
           </Routes>
         </AuthProvider>
