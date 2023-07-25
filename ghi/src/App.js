@@ -13,9 +13,11 @@ import SidebarLeft from "./components/nav/Nav";
 import EditProfile from "./components/profile/EditProfile";
 
 function App() {
-  const baseUrl = process.env.REACT_APP_API_HOST;
   const domain = /https:\/\/[^/]+/;
   const basename = process.env.PUBLIC_URL.replace(domain, "");
+  const baseUrl = process.env.REACT_APP_API_HOST;
+  console.log("basename", basename);
+  console.log("baseurl", baseUrl);
 
   const StageChat = () => {
     return (

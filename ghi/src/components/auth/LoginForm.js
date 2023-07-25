@@ -2,6 +2,7 @@ import useToken from "@galvanize-inc/jwtdown-for-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { VscEyeClosed, VscEye } from "react-icons/vsc";
+import { Link } from 'react-router-dom';
 
 const LoginForm = () => {
   const [username, setUsername] = useState("");
@@ -101,12 +102,12 @@ const LoginForm = () => {
               </div>
             </div>
             <div className="text-sm">
-              <a
-                href="/signup"
+              <Link
+                to="/signup"
                 className="text-purple-600 hover:text-purple-800"
               >
                 Sign up here
-              </a>
+              </Link>
             </div>
             <div>
               <button
