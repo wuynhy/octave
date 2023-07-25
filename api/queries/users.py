@@ -26,6 +26,15 @@ class UserUpdate(UserIn):
     avatar: Optional[UploadFile] = None
     bio: Optional[str] = ""
 
+    @validator("avatar")
+    def validate_avatar(cls, file):
+        if not file.filename.lower().endswith((".jpg", ".jpeg", ".png")):
+            raise ValueError(
+                "Only JPG, JPEG, and PNG files are allowed for the cover art."
+            )
+        return file
+
+
 class UserOut(BaseModel):
     id: int
     username: str
@@ -230,7 +239,8 @@ class UserRepository:
 
                 temp_cover_file = user.avatar
                 avatar_key_name = (
-                    f"{user.username.replace(' ', '-')}-cover-{temp_cover_file.filename}-{uuid.uuid4().hex}"
+                    f"{user.username.replace(' ', '-')}-cover-"
+                    f"{temp_cover_file.filename}-{uuid.uuid4().hex}"
                 )
                 avatar_file = f"https://{self.bucket_name}.s3.{self.region_name}.amazonaws.com/{avatar_key_name}"
 

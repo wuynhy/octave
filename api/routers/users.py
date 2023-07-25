@@ -67,7 +67,7 @@ async def create_user(
     user_info: UserIn,
     repo: UserRepository = Depends(),
 ):
-    
+
     hashed_password = authenticator.hash_password(user_info.password)
     try:
         user = await repo.create(user_info, hashed_password)
@@ -116,8 +116,7 @@ async def update_user(
     if existing_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     if user_data:
-       return await repo.update(current_username, user, hashed_password)
-
+        return await repo.update(current_username, user, hashed_password)
 
 
 @router.delete("/users/{username}", response_model=bool)
