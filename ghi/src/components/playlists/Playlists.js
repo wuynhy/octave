@@ -44,6 +44,7 @@ const Playlists = () => {
         ))}
       </div>
     </div>
+
   );
 };
 
