@@ -16,7 +16,6 @@ import PlaylistDetail from "./components/playlists/PlaylistDetail";
 import CreatePlaylist from "./components/playlists/CreatePlaylist";
 import UpdatePlaylist from "./components/playlists/UpdatePlaylist";
 
-
 function App() {
   const baseUrl = process.env.REACT_APP_API_HOST;
   const domain = /https:\/\/[^/]+/;
@@ -66,13 +65,15 @@ function App() {
                 element={<EditProfile />}
               />
               <Route path="/playlists/" element={<Playlists />} />
-              <Route path="/playlists/:playlistId" element={<PlaylistDetail />} />
+              <Route
+                path="/playlists/:playlistId"
+                element={<PlaylistDetail />}
+              />
               <Route path="/create_playlist" element={<CreatePlaylist />} />
               <Route
                 path="/update-playlist/:playlistId"
                 element={<UpdatePlaylist />}
               />
-
             </Route>
           </Routes>
         </AuthProvider>
