@@ -1,3 +1,5 @@
+from urllib import response
+import databases
 from fastapi import (
     Depends,
     HTTPException,
@@ -15,9 +17,11 @@ from queries.playlists import (
     PlaylistRepository,
     Error,
 )
+
 from authenticator import authenticator
 
 router = APIRouter()
+
 repo = PlaylistRepository()
 
 
@@ -129,6 +133,8 @@ async def update_playlist(
         )
 
 
+
+
 @router.delete("/playlists/{playlist_id}")
 def delete_playlist(
     playlist_id: int,
@@ -148,3 +154,28 @@ def delete_playlist(
             status_code=500, detail="Failed to delete playlist"
         )
     return {"deleted": "success"}
+
+
+@router.get("/songs/search/{title}")
+async def search_songs(title: str):
+    try:
+        results = await repo.search_for_songs(title)
+        if not results:
+            raise HTTPException(status_code=404, detail="Song not found")
+        return {"songs": results}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/playlists/{playlist_id}/add_song/{song_id}")
+async def add_song_to_playlist(playlist_id: int, song_id: int):
+
+    existing_song = await repo.check_song_in_playlist(playlist_id, song_id)
+    if existing_song:
+
+        raise HTTPException(status_code=400, detail="Song already exists in the playlist.")
+
+    success = await repo.add_song_to_playlist(playlist_id, song_id)
+    if not success:
+        raise HTTPException(status_code=500, detail="Internal server error.")
+    return success
