@@ -88,13 +88,14 @@ class StageRepository:
                         name=record[1],
                         host=record[2],
                         genres=record[3].split(", ") if record[3] else [],
-                        participants=record[4].split(", ") if record[4] else [],
+                        participants=record[4].split(", ")
+                        if record[4]
+                        else [],
                         playlists=record[5].split(", ") if record[5] else [],
                         cover_url=record[6],
                     )
         except Exception as e:
             raise Exception("Could not get the specific stage: " + str(e))
-
 
     def get_all(self) -> List[StageOut]:
         try:
@@ -133,8 +134,12 @@ class StageRepository:
                             host=record[2],
                             cover_url=record[3],
                             genres=record[4].split(", ") if record[4] else [],
-                            participants=record[5].split(", ") if record[5] else [],
-                            playlists=record[6].split(", ") if record[6] else [],
+                            participants=record[5].split(", ")
+                            if record[5]
+                            else [],
+                            playlists=record[6].split(", ")
+                            if record[6]
+                            else [],
                         )
                         for record in records
                     ]
@@ -225,7 +230,7 @@ class StageRepository:
             f.write(await file_name.read())
 
         try:
-            response = self.s3_client.upload_file(temp, bucket, object_name)
+            self.s3_client.upload_file(temp, bucket, object_name)
             print("Upload Successful")
             return True
         except NoCredentialsError:
@@ -316,7 +321,7 @@ class StageRepository:
                 stage_cover_key = existing_stage.cover_url.split("/")[-1]
                 try:
                     self.delete_from_s3(stage_cover_key)
-                except Exception as e:
+                except Exception:
                     raise HTTPException(
                         status_code=500,
                         detail=f"Failed to delete cover from S3: {3}",
@@ -424,7 +429,6 @@ class StageRepository:
             print(f"Error deleteing stage: {e}")
             return False
 
-        
     def remove_participant(self, stage_id: int, participant_id: int):
         try:
             with pool.connection() as conn:
@@ -440,7 +444,6 @@ class StageRepository:
         except Exception as e:
             print(f"Error removing participant: {e}")
             return False
-
 
     def get_stages_by_participant(self, participant_id: int):
         try:
@@ -461,14 +464,13 @@ class StageRepository:
                         stage = {
                             "id": row[0],
                             "name": row[1],
-                            "host_id": row[2]
+                            "host_id": row[2],
                         }
                         stages.append(stage)
                     return stages
         except Exception as e:
             print(f"Error retrieving stages by participant: {e}")
             return []
-        
 
     def get_stages_by_host(self, host_id: int):
         try:
@@ -488,7 +490,7 @@ class StageRepository:
                         stage = {
                             "id": row[0],
                             "name": row[1],
-                            "host_id": row[2]
+                            "host_id": row[2],
                         }
                         stages.append(stage)
                     return stages

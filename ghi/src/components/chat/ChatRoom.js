@@ -27,7 +27,7 @@ function ChatRoom(props) {
   useEffect(() => {
     if (username) {
       const fetchSenderId = async () => {
-        const response = await fetch(`http://localhost:8080/users/${username}`);
+        const response = await fetch(`${process.env.REACT_APP_API_HOST}/users/${username}`);
         if (response.ok) {
           const data = await response.json();
           setSenderId(data.id);
@@ -105,7 +105,10 @@ function ChatRoom(props) {
 
   return (
     <div className="flex justify-end h-screen m-0 p-0">
-      <div className="chat-room w-full h-full flex flex-col p-4">
+      <div
+        className="chat-room w-full flex flex-col p-4"
+        style={{ height: "90vh", backgroundColor: "#000a27" }}
+      >
         <div className="chat-container flex flex-col flex-grow overflow-y-auto mb-4">
           {chats.map((c, index) => (
             <div

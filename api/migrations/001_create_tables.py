@@ -38,6 +38,7 @@ steps = [
         """
         CREATE TABLE IF NOT EXISTS songs (
             id SERIAL PRIMARY KEY,
+            uploader INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
             title TEXT NOT NULL,
             artist TEXT NOT NULL,
             music_file TEXT NOT NULL,
