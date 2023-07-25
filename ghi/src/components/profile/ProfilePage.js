@@ -105,6 +105,7 @@ const ProfilePage = () => {
         setUser(userData);
         setUserNotFound(false);
         navigate(`/profile/${searchUsername}`);
+        setSearchUsername("");
       } else if (response.status === 404) {
         setUserNotFound(true);
         throw new Error("User not found.");
@@ -139,47 +140,53 @@ const ProfilePage = () => {
       case "Songs":
         if (isFetching) return <Loader title="Loading songs..." />;
         if (error) return <Error />;
+        const userUploadedSongs = userSongs.filter(
+          (song) => song.uploader === username
+        );
+
+        if (userUploadedSongs.length === 0) {
+          return (
+            <div className="flex justify-center mt-8 text-lg font-semibold text-white">
+              No songs available.
+            </div>
+          );
+        }
+        const showUploadButton = currentUser === username;
+
         return (
           <>
-            <input
-              type="checkbox"
-              id="my_modal_7"
-              className="modal-toggle"
-              checked={isModalOpen}
-              onChange={() => setIsModalOpen(!isModalOpen)}
-            />
-            {isModalOpen && (
-              <ModalContent
-                formType="SongForm"
-                onClose={() => setIsModalOpen(false)}
-              />
-            )}
-
-            <div className="flex justify-end">
-              <label
-                id="modal_7"
-                htmlFor="my_modal_7"
-                className="btn flex items-center justify-center w-15 h-10"
-                style={{ backgroundColor: "transparent", marginRight: "10px" }}
-              >
-                <MdAddCircleOutline size={25} />
-              </label>
-            </div>
-            <div className="flex flex-wrap sm:justify-start justify-center gap-8">
-              {userSongs?.length === 0 && (
-                <div className="flex justify-center mt-8 text-lg font-semibold">
-                  No songs available.
+            {showUploadButton && (
+              <>
+                <input
+                  type="checkbox"
+                  id="my_modal_7"
+                  className="modal-toggle"
+                  checked={isModalOpen}
+                  onChange={() => setIsModalOpen(!isModalOpen)}
+                />
+                {isModalOpen && (
+                  <ModalContent
+                    formType="SongForm"
+                    onClose={() => setIsModalOpen(false)}
+                  />
+                )}
+                <div className="flex justify-end">
+                  <label
+                    id="modal_7"
+                    htmlFor="my_modal_7"
+                    className="btn flex items-center justify-center w-15 h-10"
+                    style={{ backgroundColor: "transparent", marginRight: "10px" }}
+                  >
+                    <MdAddCircleOutline size={25} />
+                  </label>
                 </div>
-              )}
-              {userSongs
+              </>
+            )}
+            <div className="flex flex-wrap sm:justify-start justify-center gap-8">
+              {userUploadedSongs
                 ?.filter((song) => song.uploader === username)
                 .map((song, index) => (
-                  <SongCard
-                    key={song.id}
-                    song={song}
-                    allSongs={userSongs}
-                    i={index}
-                  />
+                  <SongCard key={song.id} song={song} allSongs={userSongs} i={index} />
                 ))}
             </div>
           </>
@@ -247,15 +254,15 @@ const ProfilePage = () => {
               <div className="px-6">
                 <div className="flex flex-wrap justify-center">
                   <div className="w-full lg:w-3/12 px-4 lg:order-2 flex justify-center">
-                    <div className="relative">
+                    <div className="hidden sm:block h-32 w-32 mr-4 rounded-full overflow-hidden relative top-[-60px] ">
                       <img
                         alt="User Avatar"
                         src={
                           avatar === "default_avatar.jpg"
-                            ? process.env.PUBLIC_URL + "/default_avatar.jpg"
+                            ? "https://myoctavebucket.s3.us-west-1.amazonaws.com/1*W35QUSvGpcLuxPo3SRTH4w.png"
                             : avatar
                         }
-                        className="shadow-xl rounded-full h-auto align-middle border-none absolute -m-16 -ml-20 max-w-150-px"
+                        className="w-full h-full object-cover"
                       />
                     </div>
                   </div>

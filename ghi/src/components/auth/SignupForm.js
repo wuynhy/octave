@@ -46,7 +46,7 @@ const SignupForm = () => {
       <div className="flex-col flex self-center p-10 sm:max-w-5xl xl:max-w-2xl z-10">
         <div className="self-start hidden lg:flex flex-col text-white">
           <img
-            src="/icon.png"
+            src="https://myoctavebucket.s3.us-west-1.amazonaws.com/20230621_002249_0000-removebg-preview.png"
             style={{ height: "500px", width: "500px" }}
             className="mb-3"
             alt="logo"
@@ -104,10 +104,13 @@ const SignupForm = () => {
                     <VscEye onClick={toggle} />
                   )}
                 </div>
-            </div>
+              </div>
             </div>
             <div className="text-sm">
-              <a href="/login" className="text-purple-600 hover:text-purple-800">
+              <a
+                href="/login"
+                className="text-purple-600 hover:text-purple-800"
+              >
                 Log In here
               </a>
             </div>
