@@ -19,6 +19,7 @@ from queries.users import (
     UserOut,
     UsersOut,
     DuplicateUserError,
+    UserUpdate
 )
 
 
@@ -63,21 +64,10 @@ async def get_token(
 async def create_user(
     request: Request,
     response: Response,
-    username: str = Form(...),
-    password: str = Form(...),
-    email: str = Form(...),
-    bio: Optional[str] = Form(None),
-    avatar: Optional[UploadFile] = File(None),
-
+    user_info: UserIn,
     repo: UserRepository = Depends(),
 ):
-    user_info = UserIn(
-        username=username,
-        password=password,
-        email=email,
-        bio=bio,
-        avatar=avatar,
-    )
+
     hashed_password = authenticator.hash_password(user_info.password)
     try:
         user = await repo.create(user_info, hashed_password)
@@ -114,7 +104,7 @@ async def update_user(
     repo: UserRepository = Depends(),
     user_data: dict = Depends(authenticator.get_current_account_data),
 ):
-    user = UserIn(
+    user = UserUpdate(
         username=username,
         password=password,
         email=email,

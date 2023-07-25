@@ -6,7 +6,6 @@ stages:
   - build
   - deploy
 
-
 lint-test-job:
   image: python:3-bullseye
   stage: test
@@ -25,7 +24,6 @@ lint-test-job:
 #     - pip install -r requirements.txt
 #     - python -m pytest
 
-
 build-api-image:
   stage: build
   image: docker:git
@@ -39,14 +37,13 @@ build-api-image:
   only:
     - main
 
-
 build-front-end-job:
   stage: build
   image: node:lts-bullseye
   needs:
     - lint-test-job
   variables:
-    PUBLIC_URL: https://cali-pals.gitlab.io/module3-project-gamma/
+    PUBLIC_URL: https://cali-pals.gitlab.io/module3-project-gamma
     REACT_APP_API_HOST: https://mar-8-pt-octaveapi.mod3projects.com
   script:
     - cd ghi
@@ -56,7 +53,6 @@ build-front-end-job:
   artifacts:
     paths:
       - ghi/build/
-
 
 pages:
   stage: deploy
