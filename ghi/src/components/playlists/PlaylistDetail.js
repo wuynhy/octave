@@ -123,7 +123,7 @@ export default function PlaylistDetail() {
         <div className="controlBar flex justify-between">
           <Link
             to={`/update-playlist/${playlistId}`}
-            className="px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium tracking-wider rounded-md shadow-sm transition-colors duration-200"
+            className="px-2 py-1 bg-blue-500 hover:bg-purple-600 text-white text-xs font-medium tracking-wider rounded-md shadow-sm transition-colors duration-200"
           >
             Update Playlist
           </Link>

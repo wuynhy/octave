@@ -10,11 +10,32 @@ export default function UpdatePlaylist() {
   const navigate = useNavigate();
   const { playlistId } = useParams();
 
-  useEffect(() => {
-    const fetchPlaylist = async () => {};
+useEffect(() => {
+  const fetchPlaylist = async () => {
+    try {
+      const response = await fetch(`http://localhost:8080/playlists/${playlistId}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch playlist");
+      }
+      const playlistData = await response.json();
+      setName(playlistData.name);
+      setDescription(playlistData.description);
 
-    fetchPlaylist();
-  }, [token, playlistId]);
+    } catch (error) {
+      console.error("Error fetching playlist:", error);
+      // Handle error, e.g., show a toast or redirect to an error page.
+    }
+  };
+
+  fetchPlaylist();
+}, [token, playlistId]);
+
 
   const handleNameChange = (event) => {
     setName(event.target.value);
@@ -28,10 +49,36 @@ export default function UpdatePlaylist() {
     setCoverFile(event.target.files[0]);
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    //...
-  };
+const handleSubmit = async (event) => {
+  event.preventDefault();
+
+  const formData = new FormData();
+  formData.append("name", name);
+  formData.append("description", description);
+  if (coverFile) {
+    formData.append("cover", coverFile);
+  }
+
+  try {
+    const response = await fetch(`http://localhost:8080/playlists/${playlistId}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    if (response.ok) {
+
+      navigate(`/playlists/${playlistId}`);
+    } else {
+      throw new Error("Failed to update playlist");
+    }
+  } catch (error) {
+    console.error("Error updating playlist:", error);
+
+  }
+};
 
   return (
     <div className="flex items-center justify-center bg-black min-h-screen p-10">
