@@ -50,7 +50,6 @@ export default function PlaylistDetail() {
       console.error("Error:", error);
     }
   };
-
   const formatDuration = (durationInSeconds) => {
     const minutes = Math.floor(durationInSeconds / 60);
     const seconds = durationInSeconds % 60;

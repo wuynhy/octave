@@ -42,6 +42,13 @@ function App() {
             <Route exact path="/" element={<Main />} />
             <Route exact path="/signup" element={<SignupForm />} />
             <Route exact path="/login" element={<LoginForm />} />
+            <Route path="/playlists/" element={<Playlists />} />
+            <Route path="/playlists/:playlistId" element={<PlaylistDetail />} />
+            <Route path="/create_playlist" element={<CreatePlaylist />} />
+            <Route
+              path="/update-playlist/:playlistId"
+              element={<UpdatePlaylist />}
+            />
             <Route
               element={
                 <div style={{ display: "flex" }}>
@@ -63,16 +70,6 @@ function App() {
                 exact
                 path="/profile/:username/edit"
                 element={<EditProfile />}
-              />
-              <Route path="/playlists/" element={<Playlists />} />
-              <Route
-                path="/playlists/:playlistId"
-                element={<PlaylistDetail />}
-              />
-              <Route path="/create_playlist" element={<CreatePlaylist />} />
-              <Route
-                path="/update-playlist/:playlistId"
-                element={<UpdatePlaylist />}
               />
             </Route>
           </Routes>
