@@ -47,6 +47,8 @@ const SongCard = ({ song, isPlaying, activeSong, allSongs, i }) => {
         song: detailedSong || song,
         data: allSongs,
         i: songIndex,
+        nextSong,
+        prevSong,
       })
     );
     dispatch(playPause(true));

@@ -25,11 +25,14 @@ class UserIn(BaseModel):
 
     @validator("avatar")
     def validate_cover(cls, file):
-        if file is not None and not file.filename.lower().endswith((".jpg", ".jpeg", ".png")):
+        if file is not None and not file.filename.lower().endswith(
+            (".jpg", ".jpeg", ".png")
+        ):
             raise ValueError(
                 "Only JPG, JPEG, and PNG files are allowed for the avatar."
             )
         return file
+
 
 class UserOut(BaseModel):
     id: int
@@ -61,6 +64,7 @@ class UserRepository:
             aws_access_key_id=self.access_key,
             aws_secret_access_key=self.secret_key,
         )
+
     async def upload_to_s3(self, file_name, bucket, object_name=None):
         if object_name is None:
             object_name = os.path.basename(file_name.filename)
@@ -71,9 +75,7 @@ class UserRepository:
             f.write(await file_name.read())
 
         try:
-            response = self.s3_client.upload_file(
-                temp, bucket, object_name
-            )
+            self.s3_client.upload_file(temp, bucket, object_name)
             return True
         except NoCredentialsError:
             return False
@@ -96,7 +98,7 @@ class UserRepository:
         except Exception as e:
             print(f"Error deleting file from S3: {e}")
             return False
-        
+
     def record_to_user_out(self, record):
         return UserOutWithPassword(
             id=record[0],
@@ -122,8 +124,10 @@ class UserRepository:
                     db.execute(
                         """
                         SELECT u.id, u.username, u.email, u.avatar, u.bio,
-                        (SELECT COUNT(*) FROM friendships WHERE (user_id = u.id OR friend_id = u.id) AND status = 'accepted') AS friends_count,
-                        (SELECT COUNT(*) FROM friendships WHERE user_id = u.id AND status = 'pending') AS following_count,
+                        (SELECT COUNT(*) FROM friendships WHERE (user_id = u.id OR friend_id = u.id)
+                        AND status = 'accepted') AS friends_count,
+                        (SELECT COUNT(*) FROM friendships WHERE user_id = u.id
+                        AND status = 'pending') AS following_count,
                         u.password_hash
                         FROM users AS u
                         WHERE u.username = %s;
@@ -137,7 +141,6 @@ class UserRepository:
         except Exception:
             raise Exception("Failed to get user")
 
-
     def get_all(self) -> UsersOut:
         try:
             with pool.connection() as conn:
@@ -145,8 +148,10 @@ class UserRepository:
                     db.execute(
                         """
                             SELECT u.id, u.username, u.email, u.avatar, u.bio,
-                            (SELECT COUNT(*) FROM friendships WHERE (user_id = u.id OR friend_id = u.id) AND status = 'accepted') AS friends_count,
-                            (SELECT COUNT(*) FROM friendships WHERE (user_id = u.id) AND status = 'pending') AS following_count
+                            (SELECT COUNT(*) FROM friendships WHERE (user_id = u.id
+                            OR friend_id = u.id) AND status = 'accepted') AS friends_count,
+                            (SELECT COUNT(*) FROM friendships WHERE (user_id = u.id)
+                            AND status = 'pending') AS following_count
                             FROM users AS u
                             ORDER BY u.id;
                         """
@@ -170,7 +175,9 @@ class UserRepository:
         except Exception:
             raise Exception("Failed to get all users")
 
-    async def create(self, user: UserIn, password_hash: str) -> UserOutWithPassword:
+    async def create(
+        self, user: UserIn, password_hash: str
+    ) -> UserOutWithPassword:
         try:
             avatar_file = "default_avatar.jpg"
             temp_cover_file = None
@@ -181,7 +188,7 @@ class UserRepository:
                 avatar_key_name = f"{avatar_key_name}-{uuid.uuid4().hex}"
                 temp_cover_file = user.avatar
                 avatar_file = f"https://{self.bucket_name}.s3.{self.region_name}.amazonaws.com/{avatar_key_name}"
-            
+
             with pool.connection() as conn:
                 with conn.cursor() as db:
                     result = db.execute(
@@ -190,7 +197,12 @@ class UserRepository:
                         VALUES (%s, %s, %s, %s)
                         RETURNING id, username, email, avatar, bio, friends_count, following_count, password_hash;
                         """,
-                        [user.username, user.email, password_hash, avatar_file],
+                        [
+                            user.username,
+                            user.email,
+                            password_hash,
+                            avatar_file,
+                        ],
                     )
                     record = result.fetchone()
                     if record is None:
@@ -198,7 +210,9 @@ class UserRepository:
                     user_id = record[0]
 
             if temp_cover_file is not None and avatar_key_name is not None:
-                await self.upload_to_s3(temp_cover_file, self.bucket_name, avatar_key_name)
+                await self.upload_to_s3(
+                    temp_cover_file, self.bucket_name, avatar_key_name
+                )
 
             return UserOutWithPassword(
                 id=user_id,
@@ -215,23 +229,33 @@ class UserRepository:
                 raise DuplicateUserError("Username already exists")
             raise Exception("Failed to create the user")
 
-    async def update(self, old_username: str, user: UserIn, password_hash: str) -> Union[UserOutWithPassword, Error]:
+    async def update(
+        self, old_username: str, user: UserIn, password_hash: str
+    ) -> Union[UserOutWithPassword, Error]:
         try:
             exitsting_user = self.get(old_username)
             if exitsting_user is None:
                 return Error(message="User not found")
-            
+
             avatar_file = exitsting_user.avatar_url
             temp_cover_file = None
             avatar_key_name = None
 
-            if user.avatar is not None and user.avatar.filename != exitsting_user.avatar_url:
-                if exitsting_user.avatar_url is not None and exitsting_user.avatar_url != "default_avatar.jpg":
+            if (
+                user.avatar is not None
+                and user.avatar.filename != exitsting_user.avatar_url
+            ):
+                if (
+                    exitsting_user.avatar_url is not None
+                    and exitsting_user.avatar_url != "default_avatar.jpg"
+                ):
                     avatar_key = exitsting_user.avatar_url.split("/")[-1]
                     self.delete_from_s3(avatar_key)
 
                 temp_cover_file = user.avatar
-                avatar_key_name = f"{user.username.replace(' ', '-')}-cover-{temp_cover_file.filename}-{uuid.uuid4().hex}"
+                avatar_key_name = (
+                    f"{user.username.replace(' ', '-')}-cover-{temp_cover_file.filename}-{uuid.uuid4().hex}"
+                )
                 avatar_file = f"https://{self.bucket_name}.s3.{self.region_name}.amazonaws.com/{avatar_key_name}"
 
             with pool.connection() as conn:
@@ -255,16 +279,17 @@ class UserRepository:
                     record = result.fetchone()
                     if record is None:
                         return Error(message="User not found")
-            
+
             if temp_cover_file is not None and avatar_key_name is not None:
-                await self.upload_to_s3(temp_cover_file, self.bucket_name, avatar_key_name)
+                await self.upload_to_s3(
+                    temp_cover_file, self.bucket_name, avatar_key_name
+                )
 
             return self.record_to_user_out(record)
         except Exception as e:
             if "duplicate key value violates unique constraint" in str(e):
                 raise DuplicateUserError("Username already exists")
             raise Exception("Failed to update the user")
-
 
     def delete(self, username: str) -> bool:
         try:

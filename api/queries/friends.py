@@ -34,8 +34,10 @@ class FriendshipRepository:
                         SELECT EXISTS(
                             SELECT 1
                             FROM friendships
-                            WHERE (user_id = (SELECT id FROM users WHERE username = %s) AND friend_id = (SELECT id FROM users WHERE username = %s))
-                               OR (user_id = (SELECT id FROM users WHERE username = %s) AND friend_id = (SELECT id FROM users WHERE username = %s))
+                            WHERE (user_id = (SELECT id FROM users WHERE username = %s)
+                            AND friend_id = (SELECT id FROM users WHERE username = %s))
+                               OR (user_id = (SELECT id FROM users WHERE username = %s)
+                               AND friend_id = (SELECT id FROM users WHERE username = %s))
                         ) AS exists;
                         """,
                         [user1, user2, user2, user1],
@@ -99,7 +101,8 @@ class FriendshipRepository:
                         """
                         UPDATE friendships
                         SET status = 'accepted'
-                        WHERE user_id = (SELECT id FROM users WHERE username = %s) AND friend_id = (SELECT id FROM users WHERE username = %s)
+                        WHERE user_id = (SELECT id FROM users WHERE username = %s)
+                        AND friend_id = (SELECT id FROM users WHERE username = %s)
                         AND status = 'pending';
                         """,
                         [user2, user1],
@@ -140,8 +143,10 @@ class FriendshipRepository:
                     db.execute(
                         """
                         DELETE FROM friendships
-                        WHERE (user_id = (SELECT id FROM users WHERE username = %s) AND friend_id = (SELECT id FROM users WHERE username = %s))
-                        OR (user_id = (SELECT id FROM users WHERE username = %s) AND friend_id = (SELECT id FROM users WHERE username = %s));
+                        WHERE (user_id = (SELECT id FROM users WHERE username = %s)
+                        AND friend_id = (SELECT id FROM users WHERE username = %s))
+                        OR (user_id = (SELECT id FROM users WHERE username = %s)
+                        AND friend_id = (SELECT id FROM users WHERE username = %s));
                         """,
                         [user1, user2, user2, user1],
                     )

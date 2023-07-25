@@ -1,4 +1,3 @@
-from urllib import response
 from fastapi import (
     Depends,
     HTTPException,

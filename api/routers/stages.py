@@ -109,7 +109,10 @@ async def create_stage(
                 participant_stages = repository.get_stages_by_participant(participant_id)
                 if participant_stages:
                     stage_id = participant_stages[0]["id"]
-                    raise HTTPException(status_code=403, detail=f"Participant {participant_id} already in stage {stage_id}")
+                    raise HTTPException(
+                        status_code=403,
+                        detail=f"Participant {participant_id} already in stage {stage_id}"
+                        )
                 success = repository.create_stage_participant(
                     stage_id=created_stage.id, participant_id=participant_id
                 )
@@ -181,7 +184,10 @@ async def update_stage(
                 participant_stages = repository.get_stages_by_participant(participant_id)
                 if participant_stages:
                     stage_id = participant_stages[0]["id"]
-                    raise HTTPException(status_code=403, detail=f"Participant {participant_id} already in stage {stage_id}")
+                    raise HTTPException(
+                        status_code=403,
+                        detail=f"Participant {participant_id} already in stage {stage_id}"
+                    )
                 success = repository.create_stage_participant(
                     stage_id=update.id, participant_id=participant_id
                 )

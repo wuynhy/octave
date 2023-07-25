@@ -5,8 +5,6 @@ from fastapi import (
     Response,
     APIRouter,
     Request,
-    Depends,
-    HTTPException,
     Form,
     UploadFile,
     File,
@@ -41,7 +39,7 @@ router = APIRouter()
 
 
 @router.get("/api/protected", response_model=bool)
-async def get_token(
+async def get_a_token(
     request: Request,
     user_data: dict = Depends(authenticator.get_current_account_data),
 ):
@@ -67,10 +65,10 @@ async def create_user(
     response: Response,
     username: str = Form(...),
     password: str = Form(...),
-    email: str = Form(...), 
+    email: str = Form(...),
     bio: Optional[str] = Form(None),
     avatar: Optional[UploadFile] = File(None),
-    
+
     repo: UserRepository = Depends(),
 ):
     user_info = UserIn(
@@ -128,7 +126,7 @@ async def update_user(
     if existing_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     if user_data:
-       return await repo.update(current_username, user, hashed_password)
+        return await repo.update(current_username, user, hashed_password)
 
 
 @router.delete("/users/{username}", response_model=bool)

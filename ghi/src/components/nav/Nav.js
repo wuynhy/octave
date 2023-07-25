@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
-import clsx from "https://cdn.skypack.dev/clsx@1.1.1";
 import "./nav.css";
+import clsx from "clsx";
 import { Link, useNavigate } from "react-router-dom";
 import useToken from "@galvanize-inc/jwtdown-for-react";
 
 const SidebarLeft = () => {
   const [active, setActive] = useState(0);
   const [userData, setUserData] = useState({});
-  const { logout, user } = useToken();
+  const { logout } = useToken();
   const navigate = useNavigate();
 
   const handleUserData = async () => {
@@ -39,7 +39,7 @@ const SidebarLeft = () => {
           style={{ fontSize: "30px" }}
           onClick={() => {
             logout();
-            navigate("/"); // Redirect to home on logout
+            navigate("/");
           }}
         >
           {iconText}

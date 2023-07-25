@@ -60,7 +60,7 @@ class PlaylistRepository:
             f.write(await file_name.read())
 
         try:
-            response = self.s3_client.upload_file(temp, bucket, object_name)
+            self.s3_client.upload_file(temp, bucket, object_name)
             print("Upload Successful")
             return True
         except NoCredentialsError:

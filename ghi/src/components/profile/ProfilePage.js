@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import useToken from "@galvanize-inc/jwtdown-for-react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import jwt_decode from "jwt-decode";
 import { useGetAllSongsQuery } from "../../redux/services/musicPlayerApi";
 import SongCard from "../SongCard";
@@ -132,7 +132,7 @@ const ProfilePage = () => {
 
   useEffect(() => {
     dispatch(setActiveSong(null));
-  }, []);
+  }, [dispatch]);
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -313,7 +313,7 @@ const ProfilePage = () => {
                   data-te-nav-ref
                 >
                   <li role="presentation">
-                    <a
+                    <button
                       onClick={() => handleTabClick("Songs")}
                       className="my-2 block border-x-0 border-b-2 border-t-0 border-transparent px-7 pt-4 text-xs font-medium uppercase leading-tight text-neutral-500 hover:isolate hover:border-transparent hover:bg-neutral-100 focus:isolate hover:text-neutral-700 data-[te-nav-active]:border-primary data-[te-nav-active]:text-primary dark:text-neutral-400 dark:hover:bg-transparent dark:data-[te-nav-active]:border-primary-400 dark:data-[te-nav-active]:text-primary-400"
                       role="tab"
@@ -321,10 +321,10 @@ const ProfilePage = () => {
                       aria-selected="true"
                     >
                       Songs
-                    </a>
+                    </button>
                   </li>
                   <li role="presentation">
-                    <a
+                    <button
                       onClick={() => handleTabClick("Playlists")}
                       className="my-2 block border-x-0 border-b-2 border-t-0 border-transparent px-7 pt-4 text-xs font-medium uppercase leading-tight text-neutral-500 hover:isolate hover:border-transparent hover:bg-neutral-100 focus:isolate hover:text-neutral-700 data-[te-nav-active]:border-primary data-[te-nav-active]:text-primary dark:text-neutral-400 dark:hover:bg-transparent dark:data-[te-nav-active]:border-primary-400 dark:data-[te-nav-active]:text-primary-400"
                       role="tab"
@@ -332,10 +332,10 @@ const ProfilePage = () => {
                       aria-selected="false"
                     >
                       Playlists
-                    </a>
+                    </button>
                   </li>
                   <li role="presentation">
-                    <a
+                    <button
                       onClick={() => handleTabClick("Stages")}
                       className="my-2 block border-x-0 border-b-2 border-t-0 border-transparent px-7 pt-4 text-xs font-medium uppercase leading-tight text-neutral-500 hover:isolate hover:border-transparent hover:bg-neutral-100 focus:isolate hover:text-neutral-700 data-[te-nav-active]:border-primary data-[te-nav-active]:text-primary dark:text-neutral-400 dark:hover:bg-transparent dark:data-[te-nav-active]:border-primary-400 dark:data-[te-nav-active]:text-primary-400"
                       role="tab"
@@ -343,7 +343,7 @@ const ProfilePage = () => {
                       aria-selected="false"
                     >
                       Stages
-                    </a>
+                    </button>
                   </li>
                   <div className="flex items-center ml-auto">
                     {userNotFound && (

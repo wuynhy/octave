@@ -4,8 +4,7 @@ import "./profile.css";
 import { useParams } from "react-router";
 
 function EditProfile() {
-  const [userData, setUserData] = useState({});
-  const [avatar, setAvatar] = useState(null);
+  const [, setAvatar] = useState(null);
   const { username } = useParams();
   const [userName, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -29,8 +28,6 @@ function EditProfile() {
         );
         if (response.ok) {
           const userData = await response.json();
-          console.log(userData);
-          setUserData(userData);
           setBio(userData.bio || "");
           setEmail(userData.email);
           setAvatar(userData.avatar_url);
@@ -59,10 +56,6 @@ function EditProfile() {
     }
     formData.append("bio", bio);
     formData.append("email", email);
-
-    for (let pair of formData.entries()) {
-      console.log(pair[0] + ", " + pair[1]);
-    }
 
     try {
       const response = await fetch(

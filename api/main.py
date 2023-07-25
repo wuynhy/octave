@@ -36,6 +36,11 @@ app.add_middleware(
 )
 
 
+@app.get("/")
+def root():
+    return {"message": "You hit the root path!"}
+
+
 class ChatIn(BaseModel):
     sender_id: int
     stage_id: int

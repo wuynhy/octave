@@ -27,6 +27,10 @@ def create_friendship(
     friendship = friendship_repo.create_friendship(
         current_user, friend_username
     )
+    if not friendship:
+        raise HTTPException(
+            status_code=400, detail="Friendship creation failed"
+        )
     return True
 
 
