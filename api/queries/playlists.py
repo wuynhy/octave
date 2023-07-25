@@ -2,7 +2,7 @@ import os
 from typing import Optional, Union, List
 from .pool import pool
 from pydantic import BaseModel, validator
-from fastapi import UploadFile, HTTPException, File
+from fastapi import UploadFile, HTTPException
 from botocore.exceptions import NoCredentialsError
 import uuid
 import boto3
@@ -11,16 +11,13 @@ import boto3
 class Error(BaseModel):
     message: str
 
+
 class PlaylistIn(BaseModel):
     name: str
     user_id: int
     description: Optional[str] = None
     cover: UploadFile
     songs: Optional[List[str]] = []
-    artists: Optional[List[str]] = []
-    music_files: Optional[List[UploadFile]] = []
-    covers: Optional[List[UploadFile]] = []
-    durations: Optional[List[int]] = []
 
     @validator("cover")
     def validate_cover(cls, file):
@@ -36,14 +33,8 @@ class PlaylistOut(BaseModel):
     name: str
     owner: str
     description: Optional[str] = None
-    songs: Optional[List[str]] = []
-
-    artists: Optional[List[str]]
-    music_files: Optional[List[str]]
-    covers: Optional[List[str]]
-    durations: Optional[List[str]]
+    songs: List[str] = []
     cover_url: str
-
 
 
 class PlaylistRepository:
@@ -69,7 +60,7 @@ class PlaylistRepository:
             f.write(await file_name.read())
 
         try:
-            response = self.s3_client.upload_file(temp, bucket, object_name)
+            self.s3_client.upload_file(temp, bucket, object_name)
             print("Upload Successful")
             return True
         except NoCredentialsError:
@@ -106,11 +97,7 @@ class PlaylistRepository:
                             p.name,
                             u.username as owner,
                             p.description,
-                            array_agg(s.title) FILTER (WHERE s.title IS NOT NULL) as songs,
-                            array_agg(s.artist) FILTER (WHERE s.artist IS NOT NULL) as artists,
-                            array_agg(s.music_file) FILTER (WHERE s.music_file IS NOT NULL) as music_files,
-                            array_agg(s.cover) FILTER (WHERE s.cover IS NOT NULL) as covers,
-                            array_agg(s.duration) FILTER (WHERE s.duration IS NOT NULL) as durations,
+                            STRING_AGG(DISTINCT CAST(ps.song_id AS TEXT), ',') as songs,
                             p.cover
                         FROM playlists p
                         LEFT JOIN playlist_songs ps ON p.id = ps.playlist_id
@@ -128,12 +115,8 @@ class PlaylistRepository:
                             name=record[1],
                             owner=record[2],
                             description=record[3],
-                            songs=record[4],
-                            artists=record[5],
-                            music_files=record[6],
-                            covers=record[7],
-                            durations=record[8],
-                            cover_url=record[9],
+                            songs=record[4].split(",") if record[4] else [],
+                            cover_url=record[5],
                         )
                     return None
         except Exception as e:
@@ -151,7 +134,7 @@ class PlaylistRepository:
                             p.name,
                             u.username as owner,
                             p.description,
-                            STRING_AGG(DISTINCT s.title, ',') as songs,
+                            STRING_AGG(DISTINCT p.name, ',') as songs,
                             p.cover
                         FROM playlists p
                         LEFT JOIN playlist_songs ps ON p.id = ps.playlist_id
@@ -353,80 +336,4 @@ class PlaylistRepository:
                     return True
         except Exception as e:
             print(f"Error creating playlist song: {e}")
-            return False
-
-
-    async def search_for_songs(self, title: str):
-        try:
-            with pool.connection() as conn:
-                with conn.cursor() as db:
-                    db.execute(
-                        """
-                        SELECT id, title FROM songs WHERE title LIKE %s
-                        """,
-                        [f"%{title}%"],
-                    )
-                    songs = db.fetchall()
-            return songs
-        except Exception as e:
-            print(f"Error searching for songs: {e}")
-            raise HTTPException(
-                status_code=500, detail="Internal server error."
-            )
-
-
-
-
-    async def add_song_to_playlist(self, playlist_id: int, song_id: int):
-        try:
-            with pool.connection() as conn:
-                with conn.cursor() as db:
-                    db.execute(
-                        """
-                        INSERT INTO playlist_songs (playlist_id, song_id)
-                        VALUES (%s, %s);
-                        """,
-                        [playlist_id, song_id],
-                    )
-
-
-                    db.execute(
-                        """
-                        SELECT * FROM songs WHERE id = %s;
-                        """,
-                        [song_id],
-                    )
-                    row = db.fetchone()
-
-                    added_song = {
-                        "id": row[0],
-                        "title": row[1],
-                        "artist": row[2],
-                        "music_file": row[3],
-                        "cover": row[4],
-                        "duration": row[5],
-                    }
-
-            return added_song
-        except Exception as e:
-            print(f"Error adding song to playlist: {e}")
-            return False
-
-    async def check_song_in_playlist(self, playlist_id: int, song_id: int) -> bool:
-        try:
-            with pool.connection() as conn:
-                with conn.cursor() as db:
-                    db.execute(
-                        """
-                        SELECT * FROM playlist_songs
-                        WHERE playlist_id = %s AND song_id = %s;
-                        """,
-                        [playlist_id, song_id],
-                    )
-                    song_in_playlist = db.fetchone()
-
-
-            return bool(song_in_playlist)
-        except Exception as e:
-            print(f"Error checking if song is in playlist: {e}")
             return False

@@ -6,9 +6,6 @@ export default function PlaylistDetail() {
   const { token } = useToken();
   const { playlistId } = useParams();
   const [playlist, setPlaylist] = useState(null);
-  const [songs, setSongs] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [playingSong, setPlayingSong] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -30,64 +27,6 @@ export default function PlaylistDetail() {
 
     fetchPlaylist();
   }, [playlistId]);
-
-  useEffect(() => {
-    const fetchSongs = async () => {
-      try {
-        const response = await fetch("http://localhost:8080/songs");
-        if (response.ok) {
-          const data = await response.json();
-          setSongs(data);
-        } else {
-          console.log("Failed to fetch songs");
-        }
-      } catch (error) {
-        console.log("Error fetching songs:", error.message);
-      }
-    };
-
-    fetchSongs();
-  }, []);
-
-  const addSongToPlaylist = async (songId) => {
-    try {
-      const response = await fetch(
-        `http://localhost:8080/playlists/${playlistId}/add_song/${songId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      if (response.ok) {
-        const addedSong = await response.json();
-        setPlaylist((prevPlaylist) => {
-          return {
-            ...prevPlaylist,
-            songs: [...(prevPlaylist.songs || []), addedSong],
-          };
-        });
-        alert("Song added to playlist!");
-      } else {
-        console.log("Failed to add song to playlist");
-      }
-    } catch (error) {
-      console.log("Error adding song to playlist:", error.message);
-    }
-  };
-
-  const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
-  };
-
-  if (!playlist) {
-    return <div>Loading...</div>;
-  }
-
-  const filteredSongs = songs.filter((song) =>
-    song.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   const deletePlaylist = async () => {
     try {
@@ -111,6 +50,7 @@ export default function PlaylistDetail() {
       console.error("Error:", error);
     }
   };
+
   const formatDuration = (durationInSeconds) => {
     const minutes = Math.floor(durationInSeconds / 60);
     const seconds = durationInSeconds % 60;
@@ -136,7 +76,6 @@ export default function PlaylistDetail() {
         </div>
 
         <div className="flex justify-start items-start mb-5">
-          {" "}
           {playlist && (
             <>
               <div className="flex justify-center items-center bg-gray-900 rounded w-72 h-72">
@@ -149,32 +88,10 @@ export default function PlaylistDetail() {
                 </Link>
               </div>
               <div className="ml-5">
-                <h1 className="text-4xl mb-5 font-semibold">{playlist.name}</h1>
+                <h1 className="text-4xl mb-5 font-semibold">
+                  {playlist.name}
+                </h1>
                 <p className="text-base font-bold">{playlist.description}</p>
-                <input
-                  type="text"
-                  placeholder="Search songs..."
-                  onChange={handleSearch}
-                  className="bg-gray-700 text-white px-3 py-2 mt-4 rounded"
-                />
-                {searchTerm &&
-                  filteredSongs.map((song) => (
-                    <div
-                      key={song.id}
-                      className="flex items-center mt-2 bg-gray-900 p-4 rounded shadow-lg"
-                    >
-                      <div className="flex-grow">
-                        <h2 className="text-green-400">{song.title}</h2>
-                        <p className="text-gray-500">{song.artist}</p>
-                      </div>
-                      <button
-                        onClick={() => addSongToPlaylist(song.id)}
-                        className="text-xs bg-green-400 text-black hover:bg-green-500 transition-colors duration-200 rounded px-2 py-1"
-                      >
-                        Add to playlist
-                      </button>
-                    </div>
-                  ))}
               </div>
             </>
           )}
