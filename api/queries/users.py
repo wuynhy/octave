@@ -20,19 +20,11 @@ class UserIn(BaseModel):
     username: str
     password: str
     email: str
+
+
+class UserUpdate(UserIn):
     avatar: Optional[UploadFile] = None
     bio: Optional[str] = ""
-
-    @validator("avatar")
-    def validate_cover(cls, file):
-        if file is not None and not file.filename.lower().endswith(
-            (".jpg", ".jpeg", ".png")
-        ):
-            raise ValueError(
-                "Only JPG, JPEG, and PNG files are allowed for the avatar."
-            )
-        return file
-
 
 class UserOut(BaseModel):
     id: int
@@ -179,29 +171,18 @@ class UserRepository:
         self, user: UserIn, password_hash: str
     ) -> UserOutWithPassword:
         try:
-            avatar_file = "default_avatar.jpg"
-            temp_cover_file = None
-            avatar_key_name = None
-            if user.avatar is not None and user.avatar.filename is not None:
-                avatar_key_name = os.path.basename(user.avatar.filename)
-                avatar_key_name = avatar_key_name.replace(" ", "-")
-                avatar_key_name = f"{avatar_key_name}-{uuid.uuid4().hex}"
-                temp_cover_file = user.avatar
-                avatar_file = f"https://{self.bucket_name}.s3.{self.region_name}.amazonaws.com/{avatar_key_name}"
-
             with pool.connection() as conn:
                 with conn.cursor() as db:
                     result = db.execute(
                         """
-                        INSERT INTO users (username, email, password_hash, avatar)
-                        VALUES (%s, %s, %s, %s)
+                        INSERT INTO users (username, email, password_hash)
+                        VALUES (%s, %s, %s)
                         RETURNING id, username, email, avatar, bio, friends_count, following_count, password_hash;
                         """,
                         [
                             user.username,
                             user.email,
                             password_hash,
-                            avatar_file,
                         ],
                     )
                     record = result.fetchone()
@@ -209,17 +190,12 @@ class UserRepository:
                         raise Exception("Failed to create the user")
                     user_id = record[0]
 
-            if temp_cover_file is not None and avatar_key_name is not None:
-                await self.upload_to_s3(
-                    temp_cover_file, self.bucket_name, avatar_key_name
-                )
-
             return UserOutWithPassword(
                 id=user_id,
                 username=user.username,
                 email=user.email,
-                avatar_url=avatar_file,
-                bio=user.bio if user.bio else "",
+                avatar_url="default_avatar.jpg",
+                bio="",
                 friends_count=0,
                 following_count=0,
                 password_hash=password_hash,
@@ -230,7 +206,7 @@ class UserRepository:
             raise Exception("Failed to create the user")
 
     async def update(
-        self, old_username: str, user: UserIn, password_hash: str
+        self, old_username: str, user: UserUpdate, password_hash: str
     ) -> Union[UserOutWithPassword, Error]:
         try:
             exitsting_user = self.get(old_username)

@@ -46,7 +46,7 @@ build-front-end-job:
   needs:
     - lint-test-job
   variables:
-    PUBLIC_URL: https://cali-pals.gitlab.io/module3-project-gamma/
+    PUBLIC_URL: https://cali-pals.gitlab.io/module3-project-gamma
     REACT_APP_API_HOST: https://mar-8-pt-octaveapi.mod3projects.com
   script:
     - cd ghi
