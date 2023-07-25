@@ -3,7 +3,7 @@ RUN python -m pip install --upgrade pip
 WORKDIR /app
 COPY requirements.txt requirements.txt
 COPY main.py main.py
-COPY authenticator authenticator
+COPY authenticator.py authenticator.py
 COPY routers routers
 COPY queries queries
 RUN python -m pip install -r requirements.txt
