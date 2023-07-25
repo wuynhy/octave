@@ -11,11 +11,15 @@ import Main from "./page/Main";
 import ProfilePage from "./components/profile/ProfilePage";
 import SidebarLeft from "./components/nav/Nav";
 import EditProfile from "./components/profile/EditProfile";
+import Playlists from "./components/playlists/Playlists";
+import PlaylistDetail from "./components/playlists/PlaylistDetail";
+import CreatePlaylist from "./components/playlists/CreatePlaylist";
+import UpdatePlaylist from "./components/playlists/UpdatePlaylist";
 
 function App() {
+  const baseUrl = process.env.REACT_APP_API_HOST;
   const domain = /https:\/\/[^/]+/;
   const basename = process.env.PUBLIC_URL.replace(domain, "");
-  const baseUrl = process.env.REACT_APP_API_HOST;
 
   const StageChat = () => {
     return (
@@ -59,6 +63,16 @@ function App() {
                 exact
                 path="/profile/:username/edit"
                 element={<EditProfile />}
+              />
+              <Route path="/playlists/" element={<Playlists />} />
+              <Route
+                path="/playlists/:playlistId"
+                element={<PlaylistDetail />}
+              />
+              <Route path="/create_playlist" element={<CreatePlaylist />} />
+              <Route
+                path="/update-playlist/:playlistId"
+                element={<UpdatePlaylist />}
               />
             </Route>
           </Routes>
