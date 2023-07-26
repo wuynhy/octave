@@ -13,6 +13,16 @@ const Playlists = () => {
 
   return (
     <div className="min-h-screen p-10 flex flex-col items-center">
+      <div className="flex justify-between items-center w-full mb-10">
+        <h1 className="text-4xl text-white font-bold">Playlists</h1>
+        <Link
+          to="/create_playlist"
+          className="flex justify-center bg-purple-700 hover:bg-purple-900 text-gray-100 p-3 rounded-md tracking-wide font-medium shadow-lg cursor-pointer transition ease-in duration-500 text-base"
+        >
+          + Create playlist
+        </Link>
+      </div>
+
       <div className="grid grid-cols-6 gap-1 mt-10 w-full">
         {playlists.map((playlist) => (
           <div

@@ -42,6 +42,7 @@ function App() {
             <Route exact path="/" element={<Main />} />
             <Route exact path="/signup" element={<SignupForm />} />
             <Route exact path="/login" element={<LoginForm />} />
+
             <Route
               element={
                 <div style={{ display: "flex" }}>

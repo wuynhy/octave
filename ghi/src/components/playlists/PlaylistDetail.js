@@ -1,21 +1,21 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import useToken from "@galvanize-inc/jwtdown-for-react";
+import { useCallback } from "react";
 
 export default function PlaylistDetail() {
   const { token } = useToken();
   const { playlistId } = useParams();
-
   const [playlist, setPlaylist] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
-  const [playlistSongs, setPlaylistSongs] = useState([]);
+  const [playlistSongs] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const [modalVisible, setModalVisible] = useState(false);
   const navigate = useNavigate();
 
-  const fetchPlaylist = async () => {
+  const fetchPlaylist = useCallback(async () => {
     try {
       const response = await fetch(
         `${process.env.REACT_APP_API_HOST}/playlists/${playlistId}`
@@ -29,11 +29,11 @@ export default function PlaylistDetail() {
     } catch (error) {
       console.log("Error fetching playlist:", error.message);
     }
-  };
+  }, [playlistId]);
 
   useEffect(() => {
     fetchPlaylist();
-  }, [playlistId]);
+  }, [fetchPlaylist]);
 
   const deletePlaylist = async () => {
     try {
@@ -201,6 +201,14 @@ export default function PlaylistDetail() {
                     >
                       Add Songs
                     </button>
+                  </div>
+                  <div className="py-1">
+                    <Link
+                      to="/playlists"
+                      className="block px-4 py-2 text-sm hover:bg-gray-600"
+                    >
+                      Back to Playlists
+                    </Link>
                   </div>
                 </div>
               )}
