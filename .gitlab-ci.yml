@@ -6,7 +6,6 @@ stages:
   - build
   - deploy
 
-
 lint-test-job:
   image: python:3-bullseye
   stage: test
@@ -25,7 +24,6 @@ lint-test-job:
 #     - pip install -r requirements.txt
 #     - python -m pytest
 
-
 build-api-image:
   stage: build
   image: docker:git
@@ -38,7 +36,6 @@ build-api-image:
     - docker push $GITLAB_IMAGE:latest
   only:
     - main
-
 
 build-front-end-job:
   stage: build
@@ -56,7 +53,6 @@ build-front-end-job:
   artifacts:
     paths:
       - ghi/build/
-
 
 pages:
   stage: deploy

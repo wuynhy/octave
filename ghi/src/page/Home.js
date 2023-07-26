@@ -40,6 +40,9 @@ const Home = () => {
         <Link to={`/profile/string`}>Test</Link>
       </p>
       <Link to={`/stages/1`}>Stages</Link>
+      <p>
+        <Link to={`/playlists`}>Playlist</Link>
+      </p>
     </div>
   );
 };
