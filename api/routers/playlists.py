@@ -1,5 +1,3 @@
-from urllib import response
-import databases
 from fastapi import (
     Depends,
     HTTPException,
@@ -131,8 +129,6 @@ async def update_playlist(
         raise HTTPException(
             status_code=500, detail=f"Failed to update playlist + {e}"
         )
-
-
 
 
 @router.delete("/playlists/{playlist_id}")

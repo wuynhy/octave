@@ -19,10 +19,8 @@ const Playlists = () => {
             key={playlist.id}
             className="flex flex-col items-center w-40 h-42 rounded-lg relative transform transition duration-500 hover:scale-110 hover:rotate-6 hover:brightness-150 hover:shadow-2xl bg-gray-600 p-5"
           >
-            {/* Make the box behind the playlist image slightly bigger and lighter */}
             <div className="absolute w-44 h-40 rounded-lg bg-purple-500 opacity-30 shadow-10x2 transition-colors duration-500 hover:bg-purple-300 hover:opacity-50"></div>
             <Link to={`/playlists/${playlist.id}`}>
-              {/* Keep the playlist cover image square and centered */}
               <div className="w-40 h-40 flex items-center justify-center overflow-hidden rounded-lg">
                 <img
                   className="w-full h-full object-cover z-20 transition duration-500 hover:opacity-50"

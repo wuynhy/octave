@@ -2,7 +2,7 @@ import os
 from typing import Optional, Union, List
 from .pool import pool
 from pydantic import BaseModel, validator
-from fastapi import UploadFile, HTTPException, File
+from fastapi import UploadFile, HTTPException
 from botocore.exceptions import NoCredentialsError
 import uuid
 import boto3
@@ -10,6 +10,7 @@ import boto3
 
 class Error(BaseModel):
     message: str
+
 
 class PlaylistIn(BaseModel):
     name: str
@@ -41,7 +42,6 @@ class PlaylistOut(BaseModel):
     cover_url: str
 
 
-
 class PlaylistRepository:
     def __init__(self):
         self.access_key = os.environ.get("AWS_ACCESS_KEY_ID")
@@ -65,11 +65,9 @@ class PlaylistRepository:
             f.write(await file_name.read())
 
         try:
-            response = self.s3_client.upload_file(temp, bucket, object_name)
-            print("Upload Successful")
+            self.s3_client.upload_file(temp, bucket, object_name)
             return True
         except NoCredentialsError:
-            print("Credentials not available")
             return False
         except Exception as e:
             print(f"Error uploading file to S3: {e}")
@@ -351,7 +349,6 @@ class PlaylistRepository:
             print(f"Error creating playlist song: {e}")
             return False
 
-
     async def search_for_songs(self, title: str):
         try:
             with pool.connection() as conn:
@@ -370,9 +367,6 @@ class PlaylistRepository:
                 status_code=500, detail="Internal server error."
             )
 
-
-
-
     async def add_song_to_playlist(self, playlist_id: int, song_id: int):
         try:
             with pool.connection() as conn:
@@ -384,7 +378,6 @@ class PlaylistRepository:
                         """,
                         [playlist_id, song_id],
                     )
-
 
                     db.execute(
                         """
@@ -420,7 +413,6 @@ class PlaylistRepository:
                         [playlist_id, song_id],
                     )
                     song_in_playlist = db.fetchone()
-
 
             return bool(song_in_playlist)
         except Exception as e:
