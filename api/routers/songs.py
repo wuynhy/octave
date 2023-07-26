@@ -105,9 +105,10 @@ async def update_song(
 
 
 @router.delete("/songs/{song_id}")
-async def delete_song(
+def delete_song(
     song_id: int,
     user_data: dict = Depends(authenticator.get_current_account_data),
+    repository: SongRepository = Depends(SongRepository),
 ):
     try:
         uploader = user_data["username"]
@@ -120,5 +121,7 @@ async def delete_song(
         if not success:
             raise HTTPException(status_code=500, detail="Failed to delete song")
         return {"message": "Song deleted successfully"}
+    except HTTPException as e:
+        raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
