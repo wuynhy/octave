@@ -5,10 +5,14 @@ import useToken from "@galvanize-inc/jwtdown-for-react";
 export default function PlaylistDetail() {
   const { token } = useToken();
   const { playlistId } = useParams();
-  const { songId } = useParams();
+
   const [playlist, setPlaylist] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+  const [playlistSongs, setPlaylistSongs] = useState([]);
+
+  const [modalVisible, setModalVisible] = useState(false);
+
   const navigate = useNavigate();
 
   const fetchPlaylist = async () => {
@@ -86,34 +90,54 @@ export default function PlaylistDetail() {
       }
     } catch (error) {
       console.error("Error:", error);
+
+      const fetchPlaylist = async () => {
+        try {
+          const response = await fetch(
+            `${process.env.REACT_APP_API_HOST}/playlists/${playlistId}`
+          );
+          if (response.ok) {
+            const data = await response.json();
+            setPlaylist(data);
+            setPlaylistSongs(data.songs); // Assuming your API returns songs array
+          } else {
+            console.log("Failed to fetch playlist");
+          }
+        } catch (error) {
+          console.log("Error fetching playlist:", error.message);
+        }
+      };
     }
   };
 
-  const addSongToPlaylist = async (songId) => {
+  async function addSongToPlaylist(songId) {
+    console.log("addSongToPlaylist function called with songId:", songId); // log the songId passed to function
+    console.log("Current playlistId state:", playlistId); // log the playlistId state
+
     try {
       const response = await fetch(
         `${process.env.REACT_APP_API_HOST}/playlists/${playlistId}/add_song/${songId}`,
         {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ songId }),
         }
       );
-
       if (response.ok) {
         console.log(`Song with id: ${songId} was added to the playlist.`);
-        // Reload playlist songs after adding a new one
         fetchPlaylist();
       } else {
         console.log("Song could not be added to the playlist.");
       }
     } catch (error) {
       console.error("Error:", error);
+
+      console.log(`Song with id: ${songId} was added to the playlist.`);
+      // Reload playlist songs after adding a new one
+      fetchPlaylist();
     }
-  };
+  }
 
   return (
     <div className="bg-black text-white min-h-screen p-10 font-sans">
@@ -135,143 +159,172 @@ export default function PlaylistDetail() {
                 <p className="text-base font-bold">{playlist.description}</p>
               </div>
             </div>
-
             <div className="flex flex-col items-start">
-              <div>
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <button onClick={searchSongs}>Search</button>
-              </div>
-              {searchResults.length > 0 && (
-                <div>
-                  {searchResults.map((song) => (
-                    <div
-                      key={song.id}
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        padding: "10px",
-                        borderRadius: "5px",
-                        transition: "0.3s",
-                      }}
-                      onMouseEnter={(e) =>
-                        (e.currentTarget.style.backgroundColor = "#ddd")
-                      }
-                      onMouseLeave={(e) =>
-                        (e.currentTarget.style.backgroundColor = "transparent")
-                      }
-                    >
-                      <p>{song.title}</p>
-                      <button
-                        onClick={() => addSongToPlaylist(song.id)}
-                        style={{
-                          fontSize: "0.7rem",
-                          padding: "0.5rem",
-                          backgroundColor: "#007BFF",
-                          color: "#fff",
-                          border: "none",
-                          borderRadius: "5px",
-                          cursor: "pointer",
-                        }}
-                      >
-                        Add Song to Playlist
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <button onClick={() => setModalVisible(true)}>Add Songs</button>
             </div>
           </>
         )}
       </div>
 
-      <div className="border border-gray-800 p-4 rounded-lg mb-6 bg-gray-800">
-        <div className="controlBar flex justify-between">
-          <Link
-            to={`/update-playlist/${playlistId}`}
-            className="px-2 py-1 bg-blue-500 hover:bg-purple-600 text-white text-xs font-medium tracking-wider rounded-md shadow-sm transition-colors duration-200"
-          >
-            Update Playlist
-          </Link>
-          <button
-            onClick={deletePlaylist}
-            className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-xs font-medium tracking-wider rounded-md shadow-sm transition-colors duration-200"
-          >
-            Delete Playlist
-          </button>
-        </div>
-
-        <div className="border border-gray-800 p-4 rounded-lg bg-gray-800">
-          {playlist && playlist.songs && playlist.songs.length > 0 ? (
-            <table className="table-auto w-full">
-              <thead>
-                <tr>
-                  <th className="border px-2 py-2 text-lg font-semibold text-left">
-                    #
-                  </th>
-                  <th className="border px-2 py-2 text-lg font-semibold text-left">
-                    Cover
-                  </th>
-                  <th className="border px-2 py-2 text-lg font-semibold text-left">
-                    Title
-                  </th>
-                  <th className="border px-2 py-2 text-lg font-semibold text-left">
-                    Artist
-                  </th>
-                  <th className="border px-2 py-2 text-lg font-semibold text-left">
-                    Music File
-                  </th>
-                  <th className="border px-2 py-2 text-lg font-semibold text-left">
-                    <div style={{ fontFamily: "Montserrat, sans-serif" }}>
-                      Duration
+      {modalVisible && (
+        <div className="fixed z-10 inset-0 overflow-y-auto">
+          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div
+              className="fixed inset-0 transition-opacity"
+              aria-hidden="true"
+            >
+              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <span
+              className="hidden sm:inline-block sm:align-middle sm:h-screen"
+              aria-hidden="true"
+            >
+              &#8203;
+            </span>
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div className="sm:flex sm:items-start">
+                  <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                    <input
+                      type="text"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                    <button onClick={searchSongs}>Search</button>
+                  </div>
+                </div>
+                {searchResults.length > 0 && (
+                  <div>
+                    {searchResults.map((song) => (
+                      <div
+                        key={song.id}
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          padding: "10px",
+                          borderRadius: "5px",
+                          transition: "0.3s",
+                        }}
+                        onMouseEnter={(e) =>
+                          (e.currentTarget.style.backgroundColor = "#ddd")
+                        }
+                        onMouseLeave={(e) =>
+                          (e.currentTarget.style.backgroundColor =
+                            "transparent")
+                        }
+                      >
+                        <p>{song.title}</p>
+                        <button
+                          onClick={() => {
+                            console.log(
+                              "Add song button clicked for songId:",
+                              song.id
+                            ); // log the songId when button is clicked
+                            addSongToPlaylist(song.id);
+                          }}
+                          style={{
+                            fontSize: "0.7rem",
+                            padding: "0.5rem",
+                            backgroundColor: "#007BFF",
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: "5px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          Add Song to Playlist
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button
+                  type="button"
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                  onClick={() => setModalVisible(false)}
+                >
+                  Close
+                </button>
+                {playlistSongs.length > 0 &&
+                  playlistSongs.map((song) => (
+                    <div key={song.id}>
+                      <h2>{song.title}</h2>
+                      <p>{formatDuration(song.duration)}</p>
                     </div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {playlist.songs.map((song, index) => (
-                  <tr key={index}>
-                    <td className="border px-2 py-2 text-lg">{index + 1}</td>
-                    <td className="border px-2 py-2">
-                      <img
-                        className="w-10 h-10 object-cover rounded"
-                        src={playlist.covers[index]}
-                        alt={`Cover for ${song}`}
+                  ))}
+              </div>
+            </div>
+          </div>
+        </div> // This was a missing closing tag for the modalVisible condition
+      )}
+      <div className="border border-gray-800 p-4 rounded-lg bg-gray-800">
+        {playlist && playlist.songs && playlist.songs.length > 0 ? (
+          <table className="table-auto w-full">
+            <thead>
+              <tr>
+                <th className="border px-2 py-2 text-lg font-semibold text-left">
+                  #
+                </th>
+                <th className="border px-2 py-2 text-lg font-semibold text-left">
+                  Cover
+                </th>
+                <th className="border px-2 py-2 text-lg font-semibold text-left">
+                  Title
+                </th>
+                <th className="border px-2 py-2 text-lg font-semibold text-left">
+                  Artist
+                </th>
+                <th className="border px-2 py-2 text-lg font-semibold text-left">
+                  Music File
+                </th>
+                <th className="border px-2 py-2 text-lg font-semibold text-left">
+                  <div style={{ fontFamily: "Montserrat, sans-serif" }}>
+                    Duration
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {playlist.songs.map((song, index) => (
+                <tr key={index}>
+                  <td className="border px-2 py-2 text-lg">{index + 1}</td>
+                  <td className="border px-2 py-2">
+                    <img
+                      className="w-10 h-10 object-cover rounded"
+                      src={playlist.covers[index]}
+                      alt={`Cover for ${song}`}
+                    />
+                  </td>
+                  <td className="border px-2 py-2">
+                    <ol style={{ margin: 0, padding: 0 }}>
+                      <li style={{ marginBottom: "10px" }}>{song}</li>
+                    </ol>
+                  </td>
+                  <td className="border px-2 py-2 text-lg">
+                    {playlist.artists[index]}
+                  </td>
+                  <td className="border px-2 py-2">
+                    <audio controls>
+                      <source
+                        src={playlist.music_files[index]}
+                        type="audio/mpeg"
                       />
-                    </td>
-                    <td className="border px-2 py-2">
-                      <ol style={{ margin: 0, padding: 0 }}>
-                        <li style={{ marginBottom: "10px" }}>{song}</li>
-                      </ol>
-                    </td>
-                    <td className="border px-2 py-2 text-lg">
-                      {playlist.artists[index]}
-                    </td>
-                    <td className="border px-2 py-2">
-                      <audio controls>
-                        <source
-                          src={playlist.music_files[index]}
-                          type="audio/mpeg"
-                        />
-                        Your browser does not support the audio element.
-                      </audio>
-                    </td>
-                    <td className="border px-2 py-2 text-lg">
-                      {formatDuration(playlist.durations[index])}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <div className="text-lg">No songs in the playlist yet.</div>
-          )}
-        </div>
+                    </audio>
+                  </td>
+                  <td className="border px-2 py-2 text-lg">
+                    {formatDuration(playlist.durations[index])}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <p>No songs in this playlist yet.</p>
+        )}
       </div>
-    </div>
+    </div> // Extra closing div tag removed here
   );
 }
