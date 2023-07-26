@@ -42,6 +42,13 @@ function App() {
             <Route exact path="/" element={<Main />} />
             <Route exact path="/signup" element={<SignupForm />} />
             <Route exact path="/login" element={<LoginForm />} />
+            <Route path="/playlists/" element={<Playlists />} />
+            <Route path="/playlists/:playlistId" element={<PlaylistDetail />} />
+            <Route path="/create_playlist" element={<CreatePlaylist />} />
+            <Route
+              path="/update-playlist/:playlistId"
+              element={<UpdatePlaylist />}
+            />
 
             <Route
               element={

@@ -257,7 +257,7 @@ export default function PlaylistDetail() {
                           }}
                           className="text-xs py-1 px-2 bg-green-500 hover:bg-green-600 text-white rounded cursor-pointer"
                         >
-                          Add Song to Playlist
+                          Add Song
                         </button>
                       </div>
                     ))}
