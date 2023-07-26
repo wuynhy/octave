@@ -144,14 +144,7 @@ const ProfilePage = () => {
           (song) => song.uploader === username
         );
 
-        if (userUploadedSongs.length === 0) {
-          return (
-            <div className="flex justify-center mt-8 text-lg font-semibold text-white">
-              No songs available.
-            </div>
-          );
-        }
-        const showUploadButton = currentUser === username;
+        const showUploadButton = currentUser === username; 
 
         return (
           <>
@@ -175,20 +168,32 @@ const ProfilePage = () => {
                     id="modal_7"
                     htmlFor="my_modal_7"
                     className="btn flex items-center justify-center w-15 h-10"
-                    style={{ backgroundColor: "transparent", marginRight: "10px" }}
+                    style={{
+                      backgroundColor: "transparent",
+                      marginRight: "10px",
+                    }}
                   >
                     <MdAddCircleOutline size={25} />
                   </label>
                 </div>
               </>
             )}
-            <div className="flex flex-wrap sm:justify-start justify-center gap-8">
-              {userUploadedSongs
-                ?.filter((song) => song.uploader === username)
-                .map((song, index) => (
-                  <SongCard key={song.id} song={song} allSongs={userSongs} i={index} />
+            {userUploadedSongs.length === 0 ? (
+              <div className="flex justify-center mt-8 text-lg font-semibold text-white">
+                No songs available.
+              </div>
+            ) : (
+              <div className="flex flex-wrap sm:justify-start justify-center gap-8">
+                {userUploadedSongs.map((song, index) => (
+                  <SongCard
+                    key={song.id}
+                    song={song}
+                    allSongs={userSongs}
+                    i={index}
+                  />
                 ))}
-            </div>
+              </div>
+            )}
           </>
         );
       case "Playlists":
