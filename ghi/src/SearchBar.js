@@ -3,28 +3,28 @@ import { useState, useEffect } from "react";
 
 const SearchBar = () => {
   const [songs, setSongs] = useState([]);
-  const [stages, setStages] = useState([]); 
-  const [playlists, setPlaylists] = useState([]); 
+  const [stages, setStages] = useState([]);
+  const [playlists, setPlaylists] = useState([]);
   const [searchInput, setSearchInput] = useState("");
   const [filteredResults, setFilteredResults] = useState([]);
 
   const fetchData = async () => {
     const songUrl = `${process.env.REACT_APP_API_HOST}/songs`;
-    const stageUrl = `${process.env.REACT_APP_API_HOST}/stages`; 
+    const stageUrl = `${process.env.REACT_APP_API_HOST}/stages`;
     const playlistUrl = `${process.env.REACT_APP_API_HOST}/playlists`;
 
     const songResponse = await fetch(songUrl);
-    const stageResponse = await fetch(stageUrl); 
-    const playlistResponse = await fetch(playlistUrl); 
+    const stageResponse = await fetch(stageUrl);
+    const playlistResponse = await fetch(playlistUrl);
 
     if (songResponse.ok && stageResponse.ok) {
       const songData = await songResponse.json();
-      const stageData = await stageResponse.json(); 
-      const playlistData = await playlistResponse.json(); 
+      const stageData = await stageResponse.json();
+      const playlistData = await playlistResponse.json();
 
       setSongs(songData);
-      setStages(stageData); 
-      setPlaylists(playlistData); 
+      setStages(stageData);
+      setPlaylists(playlistData);
     } else {
       console.error("Failed to get Song, Stage, or Playlist Details");
     }

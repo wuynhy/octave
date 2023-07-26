@@ -15,6 +15,7 @@ import Playlists from "./components/playlists/Playlists";
 import PlaylistDetail from "./components/playlists/PlaylistDetail";
 import CreatePlaylist from "./components/playlists/CreatePlaylist";
 import UpdatePlaylist from "./components/playlists/UpdatePlaylist";
+import SearchBar from "./SearchBar";
 
 function App() {
   const baseUrl = process.env.REACT_APP_API_HOST;
@@ -40,6 +41,7 @@ function App() {
         <AuthProvider baseUrl={baseUrl}>
           <Routes>
             <Route exact path="/" element={<Main />} />
+            <Route exact path="/search" element={<SearchBar />} />
             <Route exact path="/signup" element={<SignupForm />} />
             <Route exact path="/login" element={<LoginForm />} />
 
