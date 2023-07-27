@@ -28,6 +28,7 @@ const ProfilePage = () => {
   const [searchUsername, setSearchUsername] = useState("");
   const navigate = useNavigate();
   const [userNotFound, setUserNotFound] = useState(false);
+  const [isFriend, setIsFriend] = useState(false);
 
   const addFriend = (friendUsername) => {
     fetch(`${process.env.REACT_APP_API_HOST}/friendships/${friendUsername}`, {
@@ -43,6 +44,47 @@ const ProfilePage = () => {
         } else {
           alert("Failed to send friend request.");
         }
+      });
+  };
+
+  const checkFriendship = (friendUsername) => {
+    fetch(
+      `${process.env.REACT_APP_API_HOST}/friendships/check/${friendUsername}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        setIsFriend(data);
+      });
+  };
+
+  useEffect(() => {
+    checkFriendship(username);
+  }, [username]);
+
+  const deleteFriend = (friendUsername) => {
+    fetch(`${process.env.REACT_APP_API_HOST}/friendships/${friendUsername}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((response) => {
+        if (response.ok) {
+          alert("Friendship deleted successfully!");
+        } else {
+          return response.json().then((data) => {
+            throw new Error(data.detail || "Failed to delete the friend.");
+          });
+        }
+      })
+      .catch((error) => {
+        alert(error.message);
       });
   };
 
@@ -163,7 +205,7 @@ const ProfilePage = () => {
           (song) => song.uploader === username
         );
 
-        const showUploadButton = currentUser === username; 
+        const showUploadButton = currentUser === username;
 
         return (
           <>
@@ -305,6 +347,14 @@ const ProfilePage = () => {
                           onClick={() => setIsEditProfileModalOpen(true)}
                         >
                           Edit Profile
+                        </button>
+                      ) : isFriend ? (
+                        <button
+                          className="bg-red-600 active:bg-red-700 uppercase text-white font-bold hover:shadow-md shadow text-xs px-4 py-2 rounded outline-none focus:outline-none sm:mr-2 mb-1 ease-linear transition-all duration-150"
+                          type="button"
+                          onClick={() => deleteFriend(username)}
+                        >
+                          End Friendship
                         </button>
                       ) : (
                         <button

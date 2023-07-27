@@ -101,3 +101,15 @@ def get(friendship_id: int) -> FriendshipOut:
     if friendship is None:
         raise HTTPException(status_code=404, detail="Friendship not found")
     return friendship
+
+
+@router.get("/friendships/check/{friend_username}", response_model=bool)
+def check_friendship(
+    friend_username: str,
+    user_data: dict = Depends(authenticator.get_current_account_data),
+    friendship_repo: FriendshipRepository = Depends(),
+) -> bool:
+    current_user = user_data["username"]
+    return friendship_repo.check_friendship_exist(
+        current_user, friend_username
+    )

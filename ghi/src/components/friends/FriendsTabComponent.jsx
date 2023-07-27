@@ -5,6 +5,7 @@ import jwt_decode from "jwt-decode";
 function FriendsTabComponent() {
   const [friends, setFriends] = useState([]);
   const [friendRequests, setFriendRequests] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
 
   const auth = useToken();
 
@@ -14,6 +15,19 @@ function FriendsTabComponent() {
     decodedToken = jwt_decode(auth.token);
     currentUserID = decodedToken?.account?.id || null;
   }
+
+  const fetchAllUsers = () => {
+    fetch(`${process.env.REACT_APP_API_HOST}/users`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${auth.token}`,
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setAllUsers(data.users);
+      });
+  };
 
   const fetchFriendshipData = () => {
     if (currentUserID) {
@@ -48,7 +62,13 @@ function FriendsTabComponent() {
             .filter(
               (f) => f.friend_id === currentUserID && f.status === "pending"
             )
-            .filter(Boolean);
+            .map((request) => {
+              const user = allUsers.find((u) => u.id === request.user_id);
+              return {
+                ...request,
+                user_username: user ? user.username : "Unknown User",
+              };
+            });
 
           setFriendRequests(pendingRequests);
         });
@@ -56,8 +76,12 @@ function FriendsTabComponent() {
   };
 
   useEffect(() => {
+    fetchAllUsers();
+  }, []);
+
+  useEffect(() => {
     fetchFriendshipData();
-  }, [currentUserID, auth.token]);
+  }, [currentUserID, auth.token, allUsers]);
 
   const acceptRequest = (friendUsername) => {
     fetch(`${process.env.REACT_APP_API_HOST}/friendships/${friendUsername}/`, {
@@ -95,7 +119,7 @@ function FriendsTabComponent() {
       .then((deleted) => {
         if (deleted) {
           setFriendRequests((prevRequests) =>
-            prevRequests.filter((f) => f.friend_id !== friendUsername)
+            prevRequests.filter((f) => f.user_username !== friendUsername)
           );
         }
       });
@@ -113,7 +137,7 @@ function FriendsTabComponent() {
         {friendRequests.map((request, index) => (
           <div key={index}>
             <button onClick={() => acceptRequest(request.user_username)}>
-              {request.user_username} Requested Friendship:{" "}
+              {request.user_username} has sent you a friend request:{" "}
               <span style={{ color: "lightblue" }}>Accept</span> or
             </button>
             <button onClick={() => denyRequest(request.user_username)}>
