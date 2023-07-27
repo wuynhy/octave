@@ -47,15 +47,12 @@ function FriendsTabComponent() {
                 f.status === "accepted"
             )
             .map((friend) => {
-              return {
-                ...friend,
-                username:
-                  friend.user_id === currentUserID
-                    ? friend.friend_username
-                    : friend.user_username,
-              };
-            })
-            .filter(Boolean);
+              const friendUsername =
+                friend.user_id === currentUserID
+                  ? allUsers.find((u) => u.id === friend.friend_id)?.username
+                  : allUsers.find((u) => u.id === friend.user_id)?.username;
+              return { ...friend, username: friendUsername };
+            });
           setFriends(acceptedFriends);
 
           const pendingRequests = data
@@ -63,11 +60,10 @@ function FriendsTabComponent() {
               (f) => f.friend_id === currentUserID && f.status === "pending"
             )
             .map((request) => {
-              const user = allUsers.find((u) => u.id === request.user_id);
-              return {
-                ...request,
-                user_username: user ? user.username : "Unknown User",
-              };
+              const requesterUsername = allUsers.find(
+                (u) => u.id === request.user_id
+              )?.username;
+              return { ...request, user_username: requesterUsername };
             });
 
           setFriendRequests(pendingRequests);
@@ -80,7 +76,9 @@ function FriendsTabComponent() {
   }, []);
 
   useEffect(() => {
-    fetchFriendshipData();
+    if (allUsers.length) {
+      fetchFriendshipData();
+    }
   }, [currentUserID, auth.token, allUsers]);
 
   const acceptRequest = (friendUsername) => {
