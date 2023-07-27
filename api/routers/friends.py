@@ -5,13 +5,13 @@ from typing import List
 
 
 router = APIRouter()
+friendship_repo = FriendshipRepository()
 
 
 @router.post("/friendships/{friend_username}", response_model=bool)
 def create_friendship(
     friend_username: str,
     user_data: dict = Depends(authenticator.get_current_account_data),
-    friendship_repo: FriendshipRepository = Depends(),
 ) -> bool:
     current_user = user_data["username"]
     if friend_username == current_user:
@@ -23,10 +23,10 @@ def create_friendship(
         raise HTTPException(
             status_code=400, detail="Friendship already exists"
         )
-
     friendship = friendship_repo.create_friendship(
         current_user, friend_username
     )
+    print("friendship", friendship)
     if not friendship:
         raise HTTPException(
             status_code=400, detail="Friendship creation failed"
@@ -91,12 +91,16 @@ def unfollow_pending(
 
 
 @router.get("/friendships", response_model=List[FriendshipOut])
-def get_all_friendships(
-    user_data: dict = Depends(authenticator.get_current_account_data),
-    friendship_repo: FriendshipRepository = Depends(),
-) -> List[FriendshipOut]:
-    if user_data:
-        friendships = friendship_repo.get_all_friendships()
-        return [FriendshipOut(**friendship) for friendship in friendships]
-    else:
-        return []
+def get_all():
+    friendships = friendship_repo.get_all()
+    return friendships
+
+
+@router.get("/friendships/{friendship_id}", response_model=FriendshipOut)
+def get(
+    friendship_id: int
+) -> FriendshipOut:
+    friendship = friendship_repo.get(friendship_id)
+    if friendship is None:
+        raise HTTPException(status_code=404, detail="Friendship not found")
+    return friendship

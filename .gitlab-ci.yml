@@ -13,16 +13,18 @@ lint-test-job:
     - pip install flake8
     - flake8 api
 
-# # Run the unit tests
-# api-unit-tests-job:
-#   image: python:3-bullseye
-#   stage: test
-#   needs:
-#     - lint-test-job
-#   script:
-#     - cd api
-#     - pip install -r requirements.txt
-#     - python -m pytest
+api-unit-tests-job:
+  image: python:3-bullseye
+  stage: test
+  needs:
+    - lint-test-job
+  script:
+    - cd api
+    - pip install -r requirements.txt
+    - python -m pytest
+  variables:
+    DATABASE_URL: $DATABASE_URL
+    SIGNING_KEY: $SIGNING_KEY
 
 build-api-image:
   stage: build

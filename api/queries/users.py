@@ -28,10 +28,11 @@ class UserUpdate(UserIn):
 
     @validator("avatar")
     def validate_avatar(cls, file):
-        if not file.filename.lower().endswith((".jpg", ".jpeg", ".png")):
-            raise ValueError(
-                "Only JPG, JPEG, and PNG files are allowed for the cover art."
-            )
+        if file is not None:
+            if not file.filename.lower().endswith((".jpg", ".jpeg", ".png")):
+                raise ValueError(
+                    "Only JPG, JPEG, and PNG files are allowed for the avatar."
+                )
         return file
 
 
@@ -116,6 +117,17 @@ class UserRepository:
         old_data = user.dict()
         return UserOutWithPassword(
             username=username, password_hash=password_hash, **old_data
+        )
+
+    def user_update_to_out(self, record):
+        return UserOut(
+            id=record[0],
+            username=record[1],
+            email=record[2],
+            avatar_url=record[3],
+            bio=record[4],
+            friends_count=record[5],
+            following_count=record[6],
         )
 
     def get(self, username: str) -> Optional[UserOutWithPassword]:
@@ -216,7 +228,7 @@ class UserRepository:
 
     async def update(
         self, old_username: str, user: UserUpdate, password_hash: str
-    ) -> Union[UserOutWithPassword, Error]:
+    ) -> Union[UserOut, Error]:
         try:
             exitsting_user = self.get(old_username)
             if exitsting_user is None:
@@ -271,7 +283,7 @@ class UserRepository:
                     temp_cover_file, self.bucket_name, avatar_key_name
                 )
 
-            return self.record_to_user_out(record)
+            return self.user_update_to_out(record)
         except Exception as e:
             if "duplicate key value violates unique constraint" in str(e):
                 raise DuplicateUserError("Username already exists")
