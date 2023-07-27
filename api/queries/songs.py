@@ -75,9 +75,7 @@ class SongRepository:
             f.write(await file_name.read())
 
         try:
-            response = self.s3_client.upload_file(
-                temp, bucket, object_name
-            )
+            self.s3_client.upload_file(temp, bucket, object_name)
             return True
         except NoCredentialsError:
             return False
@@ -101,7 +99,9 @@ class SongRepository:
             print(f"Error deleting file from S3: {e}")
             return False
 
-    def record_to_song_out(self, record: dict, genres: List[str] = []) -> SongOut:
+    def record_to_song_out(
+        self, record: dict, genres: List[str] = []
+    ) -> SongOut:
         return SongOut(
             id=record["id"],
             uploader=record["uploader"],
@@ -110,7 +110,7 @@ class SongRepository:
             music_file_url=record["music_file"],
             cover_url=record["cover"],
             duration=record["duration"],
-            genres=genres
+            genres=genres,
         )
 
     async def create(self, uploader: int, song: SongIn) -> Optional[SongOut]:
@@ -164,7 +164,7 @@ class SongRepository:
                         song_id = result[0]
                     else:
                         raise ValueError("Failed to create song")
-                        
+
                     if song.genres is not None:
                         for genre in song.genres:
                             db.execute(
@@ -176,8 +176,10 @@ class SongRepository:
                             )
 
             await self.upload_to_s3(temp_file, self.bucket_name, key_name)
-            await self.upload_to_s3(temp_cover_file, self.bucket_name, cover_key_name)
-            
+            await self.upload_to_s3(
+                temp_cover_file, self.bucket_name, cover_key_name
+            )
+
             return self.get(song_id)
         except Exception as e:
             print(f"Error creating song: {e}")
@@ -297,7 +299,7 @@ class SongRepository:
                 status_code=500, detail="Failed to update song"
             )
 
-    def delete(self, song_id: int) -> bool:
+    def delete(self, song_id):
         try:
             existing_song = self.get(song_id)
 
@@ -329,7 +331,8 @@ class SongRepository:
                 with conn.cursor() as db:
                     db.execute(
                         """
-                        SELECT s.id, u.username as uploader, s.title, s.artist, s.music_file, s.cover, s.duration, string_agg(g.name, ', ')
+                        SELECT s.id, u.username as uploader, s.title, s.artist, s.music_file, s.cover, s.duration,
+                        string_agg(g.name, ', ')
                         FROM songs s
                         LEFT JOIN song_genres sg ON s.id = sg.song_id
                         LEFT JOIN genres g ON sg.genre_id = g.id
@@ -350,7 +353,7 @@ class SongRepository:
                         music_file_url=record[4],
                         cover_url=record[5],
                         duration=record[6],
-                        genres=record[7].split(', ') if record[7] else []
+                        genres=record[7].split(", ") if record[7] else [],
                     )
         except Exception as e:
             print(f"Error getting song: {e}")
@@ -362,7 +365,8 @@ class SongRepository:
                 with conn.cursor() as db:
                     db.execute(
                         """
-                        SELECT s.id, u.username as uploader, s.title,s.artist, s.music_file, s.cover, s.duration, string_agg(g.name, ', ')
+                        SELECT s.id, u.username as uploader, s.title,s.artist, s.music_file, s.cover, s.duration,
+                        string_agg(g.name, ', ')
                         FROM songs s
                         LEFT JOIN song_genres sg ON s.id = sg.song_id
                         LEFT JOIN genres g ON sg.genre_id = g.id
@@ -381,7 +385,7 @@ class SongRepository:
                             music_file_url=record[4],
                             cover_url=record[5],
                             duration=record[6],
-                            genres=record[7].split(', ') if record[7] else []
+                            genres=record[7].split(", ") if record[7] else [],
                         )
                         for record in result
                     ]
@@ -404,8 +408,7 @@ class SongRepository:
         except Exception as e:
             print(f"Error adding song genre: {e}")
             return False
-        
-    
+
     def delete_song_genre(self, song_id: int) -> bool:
         try:
             with pool.connection() as conn:

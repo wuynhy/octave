@@ -9,7 +9,11 @@ import os
 from routers import users, genres, songs, friends, stages, playlists
 from authenticator import authenticator
 
+
 DATABASE_URL = os.environ.get("DATABASE_URL")
+
+if not DATABASE_URL:
+    raise Exception("DATABASE_URL environment variable not set")
 
 database = Database(DATABASE_URL)
 
@@ -34,6 +38,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.get("/")
+def root():
+    return {"message": "You hit the root path!"}
 
 
 class ChatIn(BaseModel):

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import useToken from "@galvanize-inc/jwtdown-for-react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import jwt_decode from "jwt-decode";
 import { useGetAllSongsQuery } from "../../redux/services/musicPlayerApi";
 import SongCard from "../SongCard";
@@ -124,6 +124,7 @@ const ProfilePage = () => {
         setUser(userData);
         setUserNotFound(false);
         navigate(`/profile/${searchUsername}`);
+        setSearchUsername("");
       } else if (response.status === 404) {
         setUserNotFound(true);
         throw new Error("User not found.");
@@ -151,48 +152,58 @@ const ProfilePage = () => {
 
   useEffect(() => {
     dispatch(setActiveSong(null));
-  }, []);
+  }, [dispatch]);
 
   const renderTabContent = () => {
     switch (activeTab) {
       case "Songs":
         if (isFetching) return <Loader title="Loading songs..." />;
         if (error) return <Error />;
+        const userUploadedSongs = userSongs.filter(
+          (song) => song.uploader === username
+        );
+
+        const showUploadButton = currentUser === username; 
+
         return (
           <>
-            <input
-              type="checkbox"
-              id="my_modal_7"
-              className="modal-toggle"
-              checked={isModalOpen}
-              onChange={() => setIsModalOpen(!isModalOpen)}
-            />
-            {isModalOpen && (
-              <ModalContent
-                formType="SongForm"
-                onClose={() => setIsModalOpen(false)}
-              />
-            )}
-
-            <div className="flex justify-end">
-              <label
-                id="modal_7"
-                htmlFor="my_modal_7"
-                className="btn flex items-center justify-center w-15 h-10"
-                style={{ backgroundColor: "transparent", marginRight: "10px" }}
-              >
-                <MdAddCircleOutline size={25} />
-              </label>
-            </div>
-            <div className="flex flex-wrap sm:justify-start justify-center gap-8">
-              {userSongs?.length === 0 && (
-                <div className="flex justify-center mt-8 text-lg font-semibold">
-                  No songs available.
+            {showUploadButton && (
+              <>
+                <input
+                  type="checkbox"
+                  id="my_modal_7"
+                  className="modal-toggle"
+                  checked={isModalOpen}
+                  onChange={() => setIsModalOpen(!isModalOpen)}
+                />
+                {isModalOpen && (
+                  <ModalContent
+                    formType="SongForm"
+                    onClose={() => setIsModalOpen(false)}
+                  />
+                )}
+                <div className="flex justify-end">
+                  <label
+                    id="modal_7"
+                    htmlFor="my_modal_7"
+                    className="btn flex items-center justify-center w-15 h-10"
+                    style={{
+                      backgroundColor: "transparent",
+                      marginRight: "10px",
+                    }}
+                  >
+                    <MdAddCircleOutline size={25} />
+                  </label>
                 </div>
-              )}
-              {userSongs
-                ?.filter((song) => song.uploader === username)
-                .map((song, index) => (
+              </>
+            )}
+            {userUploadedSongs.length === 0 ? (
+              <div className="flex justify-center mt-8 text-lg font-semibold text-white">
+                No songs available.
+              </div>
+            ) : (
+              <div className="flex flex-wrap sm:justify-start justify-center gap-8">
+                {userUploadedSongs.map((song, index) => (
                   <SongCard
                     key={song.id}
                     song={song}
@@ -200,7 +211,8 @@ const ProfilePage = () => {
                     i={index}
                   />
                 ))}
-            </div>
+              </div>
+            )}
           </>
         );
       case "Playlists":
@@ -272,15 +284,15 @@ const ProfilePage = () => {
               <div className="px-6">
                 <div className="flex flex-wrap justify-center">
                   <div className="w-full lg:w-3/12 px-4 lg:order-2 flex justify-center">
-                    <div className="relative">
+                    <div className="hidden sm:block h-32 w-32 mr-4 rounded-full overflow-hidden relative top-[-60px] ">
                       <img
                         alt="User Avatar"
                         src={
                           avatar === "default_avatar.jpg"
-                            ? process.env.PUBLIC_URL + "/default_avatar.jpg"
+                            ? "https://myoctavebucket.s3.us-west-1.amazonaws.com/1*W35QUSvGpcLuxPo3SRTH4w.png"
                             : avatar
                         }
-                        className="shadow-xl rounded-full h-auto align-middle border-none absolute -m-16 -ml-20 max-w-150-px"
+                        className="w-full h-full object-cover"
                       />
                     </div>
                   </div>
@@ -338,7 +350,7 @@ const ProfilePage = () => {
                   data-te-nav-ref
                 >
                   <li role="presentation">
-                    <a
+                    <button
                       onClick={() => handleTabClick("Songs")}
                       className="my-2 block border-x-0 border-b-2 border-t-0 border-transparent px-7 pt-4 text-xs font-medium uppercase leading-tight text-neutral-500 hover:isolate hover:border-transparent hover:bg-neutral-100 focus:isolate hover:text-neutral-700 data-[te-nav-active]:border-primary data-[te-nav-active]:text-primary dark:text-neutral-400 dark:hover:bg-transparent dark:data-[te-nav-active]:border-primary-400 dark:data-[te-nav-active]:text-primary-400"
                       role="tab"
@@ -346,10 +358,10 @@ const ProfilePage = () => {
                       aria-selected="true"
                     >
                       Songs
-                    </a>
+                    </button>
                   </li>
                   <li role="presentation">
-                    <a
+                    <button
                       onClick={() => handleTabClick("Playlists")}
                       className="my-2 block border-x-0 border-b-2 border-t-0 border-transparent px-7 pt-4 text-xs font-medium uppercase leading-tight text-neutral-500 hover:isolate hover:border-transparent hover:bg-neutral-100 focus:isolate hover:text-neutral-700 data-[te-nav-active]:border-primary data-[te-nav-active]:text-primary dark:text-neutral-400 dark:hover:bg-transparent dark:data-[te-nav-active]:border-primary-400 dark:data-[te-nav-active]:text-primary-400"
                       role="tab"
@@ -357,10 +369,10 @@ const ProfilePage = () => {
                       aria-selected="false"
                     >
                       Playlists
-                    </a>
+                    </button>
                   </li>
                   <li role="presentation">
-                    <a
+                    <button
                       onClick={() => handleTabClick("Stages")}
                       className="my-2 block border-x-0 border-b-2 border-t-0 border-transparent px-7 pt-4 text-xs font-medium uppercase leading-tight text-neutral-500 hover:isolate hover:border-transparent hover:bg-neutral-100 focus:isolate hover:text-neutral-700 data-[te-nav-active]:border-primary data-[te-nav-active]:text-primary dark:text-neutral-400 dark:hover:bg-transparent dark:data-[te-nav-active]:border-primary-400 dark:data-[te-nav-active]:text-primary-400"
                       role="tab"
@@ -368,7 +380,7 @@ const ProfilePage = () => {
                       aria-selected="false"
                     >
                       Stages
-                    </a>
+                    </button>
                   </li>
                   <li role="presentation">
                     <a

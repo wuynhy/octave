@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from .pool import pool
 
 
@@ -36,8 +36,10 @@ class FriendshipRepository:
                         SELECT EXISTS(
                             SELECT 1
                             FROM friendships
-                            WHERE (user_id = (SELECT id FROM users WHERE username = %s) AND friend_id = (SELECT id FROM users WHERE username = %s))
-                               OR (user_id = (SELECT id FROM users WHERE username = %s) AND friend_id = (SELECT id FROM users WHERE username = %s))
+                            WHERE (user_id = (SELECT id FROM users WHERE username = %s)
+                            AND friend_id = (SELECT id FROM users WHERE username = %s))
+                               OR (user_id = (SELECT id FROM users WHERE username = %s)
+                               AND friend_id = (SELECT id FROM users WHERE username = %s))
                         ) AS exists;
                         """,
                         [user1, user2, user2, user1],
@@ -52,7 +54,7 @@ class FriendshipRepository:
         except Exception:
             return False
 
-    def create_friendship(self, user1: str, user2: str) -> None:
+    def create_friendship(self, user1: str, user2: str) -> Optional[FriendshipOut]:
         try:
             with pool.connection() as conn:
                 with conn.cursor() as db:
@@ -79,16 +81,21 @@ class FriendshipRepository:
                         raise Exception("User 2 does not exist")
                     user2_id = user2_id[0]
 
-                    db.execute(
-                        """
-                        INSERT INTO friendships (user_id, friend_id, status)
-                        VALUES (%s, %s, 'pending');
-                        """,
-                        [user1_id, user2_id],
-                    )
-
-                    if db.rowcount == 0:
+                    try:
+                        db.execute(
+                            """
+                            INSERT INTO friendships (user_id, friend_id, status)
+                            VALUES (%s, %s, 'pending');
+                            """,
+                            [user1_id, user2_id],
+                        )
+                        record = db.fetchone()
+                        if record is None:
+                            raise Exception("Failed to create friendship")
+                    except Exception:
                         raise Exception("Failed to create friendship")
+
+                    return self.get(record[0])
 
         except Exception as e:
             raise Exception("Failed to create friendship: " + str(e))
@@ -101,7 +108,8 @@ class FriendshipRepository:
                         """
                         UPDATE friendships
                         SET status = 'accepted'
-                        WHERE user_id = (SELECT id FROM users WHERE username = %s) AND friend_id = (SELECT id FROM users WHERE username = %s)
+                        WHERE user_id = (SELECT id FROM users WHERE username = %s)
+                        AND friend_id = (SELECT id FROM users WHERE username = %s)
                         AND status = 'pending';
                         """,
                         [user2, user1],
@@ -142,8 +150,10 @@ class FriendshipRepository:
                     db.execute(
                         """
                         DELETE FROM friendships
-                        WHERE (user_id = (SELECT id FROM users WHERE username = %s) AND friend_id = (SELECT id FROM users WHERE username = %s))
-                        OR (user_id = (SELECT id FROM users WHERE username = %s) AND friend_id = (SELECT id FROM users WHERE username = %s));
+                        WHERE (user_id = (SELECT id FROM users WHERE username = %s)
+                        AND friend_id = (SELECT id FROM users WHERE username = %s))
+                        OR (user_id = (SELECT id FROM users WHERE username = %s)
+                        AND friend_id = (SELECT id FROM users WHERE username = %s));
                         """,
                         [user1, user2, user2, user1],
                     )
@@ -199,7 +209,7 @@ class FriendshipRepository:
         except Exception:
             raise Exception("Failed to retrieve user followers")
 
-    def get_all_friendships(self) -> List[Dict[str, Any]]:
+    def get_all(self) -> List[Dict[str, Any]]:
         try:
             with pool.connection() as conn:
                 with conn.cursor() as db:
@@ -229,3 +239,28 @@ class FriendshipRepository:
                     return friendships
         except Exception:
             raise Exception("Failed to retrieve all friendships")
+
+    def get(self, id: int) -> Optional[FriendshipOut]:
+        try:
+            with pool.connection() as conn:
+                with conn.cursor() as db:
+                    db.execute(
+                        """
+                        SELECT id, user_id, friend_id, status
+                        FROM friendships
+                        WHERE id = %s
+                        """,
+                        [id],
+                    )
+                    record = db.fetchone()
+                    if record is None:
+                        return None
+                    return FriendshipOut(
+                        id=record[0],
+                        user_id=record[1],
+                        friend_id=record[2],
+                        status=record[3],
+                    )
+
+        except Exception as e:
+            raise Exception("Failed to retrieve friendship: " + str(e))

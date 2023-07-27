@@ -56,7 +56,7 @@ function UploadSong() {
     formData.append("genres", selectedGenres.join(","));
 
     try {
-      const response = await fetch("http://localhost:8080/songs", {
+      const response = await fetch(`${process.env.REACT_APP_API_HOST}/songs`, {
         method: "POST",
         body: formData,
         headers: { Authorization: `Bearer ${token}` },

@@ -8,7 +8,6 @@ from fastapi import (
 )
 from typing import List, Union, Optional
 from queries.songs import SongIn, SongOut, SongRepository, Error
-from typing import List
 from authenticator import authenticator
 
 router = APIRouter()
@@ -82,7 +81,7 @@ async def update_song(
         if song.uploader != uploader:
             raise HTTPException(status_code=403, detail="You can't edit this song")
         song_in = SongIn(
-        uploader=uploader, title=title, artist=artist, music_file=music_file, cover=cover
+            uploader=uploader, title=title, artist=artist, music_file=music_file, cover=cover
         )
         updated_song = await repository.update(uploader, song_id, song_in)
         if isinstance(updated_song, Error):
@@ -106,9 +105,10 @@ async def update_song(
 
 
 @router.delete("/songs/{song_id}")
-async def delete_song(
+def delete_song(
     song_id: int,
     user_data: dict = Depends(authenticator.get_current_account_data),
+    repository: SongRepository = Depends(SongRepository),
 ):
     try:
         uploader = user_data["username"]
@@ -121,6 +121,7 @@ async def delete_song(
         if not success:
             raise HTTPException(status_code=500, detail="Failed to delete song")
         return {"message": "Song deleted successfully"}
+    except HTTPException as e:
+        raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-

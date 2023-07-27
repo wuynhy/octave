@@ -29,19 +29,20 @@ const Home = () => {
       <h1 className="container mx-auto text-center text-4xl font-bold">
         Hello, {username ? username : "Loading..."}!
       </h1>
-      <div className="container mx-auto text-center text-2xl font-bold">
-        <button
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          onClick={logout}
-        >
-          Logout
-        </button>
-        <p>{username && <Link to={`/profile/${username}`}>Profile</Link>}</p>
-        <p>
-          <Link to={`/profile/test`}>Test</Link>
-        </p>
-        <Link to={`/stages/1`}>Stages</Link>
-      </div>
+      <button
+        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        onClick={logout}
+      >
+        Logout
+      </button>
+      <p>{username && <Link to={`/profile/${username}`}>Profile</Link>}</p>
+      <p>
+        <Link to={`/profile/string`}>Test</Link>
+      </p>
+      <Link to={`/stages/1`}>Stages</Link>
+      <p>
+        <Link to={`/playlists`}>Playlist</Link>
+      </p>
     </div>
   );
 };

@@ -27,7 +27,7 @@ function ChatRoom(props) {
   useEffect(() => {
     if (username) {
       const fetchSenderId = async () => {
-        const response = await fetch(`http://localhost:8080/users/${username}`);
+        const response = await fetch(`${process.env.REACT_APP_API_HOST}/users/${username}`);
         if (response.ok) {
           const data = await response.json();
           setSenderId(data.id);
