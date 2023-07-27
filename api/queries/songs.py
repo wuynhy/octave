@@ -299,7 +299,7 @@ class SongRepository:
                 status_code=500, detail="Failed to update song"
             )
 
-    def delete(self, song_id: int) -> bool:
+    def delete(self, song_id):
         try:
             existing_song = self.get(song_id)
 

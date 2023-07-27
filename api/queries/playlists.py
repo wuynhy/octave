@@ -145,7 +145,11 @@ class PlaylistRepository:
                             p.name,
                             u.username as owner,
                             p.description,
-                            STRING_AGG(DISTINCT s.title, ',') as songs,
+                            array_agg(s.title) FILTER (WHERE s.title IS NOT NULL) as songs,
+                            array_agg(s.artist) FILTER (WHERE s.artist IS NOT NULL) as artists,
+                            array_agg(s.music_file) FILTER (WHERE s.music_file IS NOT NULL) as music_files,
+                            array_agg(s.cover) FILTER (WHERE s.cover IS NOT NULL) as covers,
+                            array_agg(s.duration) FILTER (WHERE s.duration IS NOT NULL) as durations,
                             p.cover
                         FROM playlists p
                         LEFT JOIN playlist_songs ps ON p.id = ps.playlist_id
@@ -165,8 +169,12 @@ class PlaylistRepository:
                             name=record[1],
                             owner=record[2],
                             description=record[3],
-                            songs=record[4].split(",") if record[4] else [],
-                            cover_url=record[5],
+                            songs=record[4],
+                            artists=record[5],
+                            music_files=record[6],
+                            covers=record[7],
+                            durations=record[8],
+                            cover_url=record[9],
                         )
                         for record in records
                     ]
@@ -386,6 +394,8 @@ class PlaylistRepository:
                         [song_id],
                     )
                     row = db.fetchone()
+                    if row is None:
+                        raise Exception("Song not found")
 
                     added_song = {
                         "id": row[0],

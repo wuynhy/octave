@@ -9,11 +9,34 @@ export default function PlaylistDetail() {
   const [playlist, setPlaylist] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
-  const [playlistSongs] = useState([]);
+  const [playlistSongs, setPlaylistSongs] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const [modalVisible, setModalVisible] = useState(false);
   const navigate = useNavigate();
+  const [allPlaylists, setAllPlaylists] = useState([]);
+
+  const fetchAllPlaylists = useCallback(async () => {
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_API_HOST}/playlists`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setAllPlaylists(data);
+      } else {
+        console.log("Failed to fetch all playlists");
+      }
+    } catch (error) {
+      console.log("Error fetching all playlists:", error.message);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAllPlaylists();
+  }, [fetchAllPlaylists]);
+
+
 
   const fetchPlaylist = useCallback(async () => {
     try {
@@ -131,16 +154,18 @@ export default function PlaylistDetail() {
     };
   }, [dropdownRef]);
 
-  return (
-    <div className="bg-black text-white min-h-screen p-10 font-sans">
+ return (
+      <div className="min-h-screen p-12 flex flex-col items-center">
+      <div className="bg-gradient-to-b from-slate-800 via-slate-500 via-gray-400 to-slate-300 w-full rounded-lg p-8">
+
       <div className="flex justify-between items-start mb-5">
         {playlist && (
           <>
             <div className="flex items-center">
-              <div className="flex justify-center items-center bg-gray-900 rounded w-72 h-72">
+              <div className="flex justify-center items-center bg-slate-700 rounded w-1/8 h-1/8 shadow-lg">
                 <Link to={`/playlists/${playlist.id}`}>
                   <img
-                    className="w-64 h-64 mb-2 object-cover rounded"
+                    className="w-64 h-64 mb-2 object-cover rounded shadow-2xl"
                     src={playlist.cover_url}
                     alt={playlist.name}
                   />
@@ -280,87 +305,114 @@ export default function PlaylistDetail() {
                 >
                   Close
                 </button>
-                {playlistSongs.length > 0 &&
-                  playlistSongs.map((song) => (
-                    <div key={song.id}>
-                      <h2>{song.title}</h2>
-                      <p>{formatDuration(song.duration)}</p>
-                    </div>
-                  ))}
+                <div
+                  style={{
+                    minHeight: '80px', // Adjust this to the minimum height you want for the container
+                    maxHeight: '500px', // Adjust this to the maximum height you want for the container
+                    overflowY: 'auto'
+                  }}
+                >
+                  {playlistSongs.length > 0 &&
+                    playlistSongs.map((song) => (
+                      <div key={song.id}>
+                        <h2>{song.title}</h2>
+                        <p>{formatDuration(song.duration)}</p>
+                      </div>
+                    ))}
+                </div>
+
               </div>
             </div>
           </div>
         </div>
       )}
 
-      <div className="border border-gray-800 p-4 rounded-lg bg-gray-800 flex">
-        {playlist && playlist.songs && playlist.songs.length > 0 ? (
-          <div className="w-3/4 mr-4">
-            <table className="table-auto w-full">
-              <thead>
-                <tr>
-                  <th className="border px-2 py-2 text-lg font-semibold text-left">
-                    #
-                  </th>
-                  <th className="border px-2 py-2 text-lg font-semibold text-left">
-                    Cover
-                  </th>
-                  <th className="border px-2 py-2 text-lg font-semibold text-left">
-                    Title
-                  </th>
-                  <th className="border px-2 py-2 text-lg font-semibold text-left">
-                    Artist
-                  </th>
-                  <th className="border px-2 py-2 text-lg font-semibold text-left">
-                    Music File
-                  </th>
-                  <th className="border px-2 py-2 text-lg font-semibold text-left">
-                    <div style={{ fontFamily: "Montserrat, sans-serif" }}>
-                      Duration
-                    </div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {playlist.songs.map((song, index) => (
-                  <tr key={index}>
-                    <td className="border px-2 py-2 text-lg">{index + 1}</td>
-                    <td className="border px-2 py-2">
-                      <img
-                        className="w-10 h-10 object-cover rounded"
-                        src={playlist.covers[index]}
-                        alt={`Cover for ${song}`}
-                      />
-                    </td>
-                    <td className="border px-2 py-2">
-                      <ol style={{ margin: 0, padding: 0 }}>
-                        <li style={{ marginBottom: "10px" }}>{song}</li>
-                      </ol>
-                    </td>
-                    <td className="border px-2 py-2 text-lg">
-                      {playlist.artists[index]}
-                    </td>
-                    <td className="border px-2 py-2">
-                      <audio controls>
-                        <source
-                          src={playlist.music_files[index]}
-                          type="audio/mpeg"
-                        />
-                      </audio>
-                    </td>
-                    <td className="border px-2 py-2 text-lg">
-                      {formatDuration(playlist.durations[index])}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p>No songs in this playlist yet.</p>
-        )}
-        <div className="w-1/4 bg-gray-800"></div>
+    <div className="justify-content-center border border-gray-800 p-2 rounded-lg bg-gradient-to-t from-slate-900 to-gray-500 flex flex-col w-full shadow-inner">
+  <div className="flex flex-grow">
+    {playlist && playlist.songs && playlist.songs.length > 0 ? (
+      <div className="w-3/4 mr-4">
+        <table className="table-auto w-full">
+          <thead>
+            <tr>
+              <th className="border px-2 py-2 text-lg font-semibold text-left">#</th>
+              <th className="border px-2 py-2 text-lg font-semibold text-left">Cover</th>
+              <th className="border px-2 py-2 text-lg font-semibold text-left">Title</th>
+              <th className="border px-2 py-2 text-lg font-semibold text-left">Artist</th>
+              <th className="border px-2 py-2 text-lg font-semibold text-left">Music File</th>
+              <th className="border px-2 py-2 text-lg font-semibold text-left">
+                <div style={{ fontFamily: "Montserrat, sans-serif" }}>Duration</div>
+              </th>
+            </tr>
+          </thead>
+          <tbody className="space-y-4">
+           {playlist.songs.map((song, index) => (
+    <tr key={index} className="py-12">
+      <td className="border px-2 py-2 text-lg p-1 leading-1">{index + 1}</td>
+      <td className="border px-2 py-2">
+        <img
+          className="w-12 h-10 object-cover rounded"
+          src={playlist.covers[index]}
+          alt={`Cover for ${song}`}
+        />
+      </td>
+      <td className="border px-2 py-2">
+        <ol style={{ margin: 0, padding: 0 }}>
+          <li style={{ marginBottom: "10px" }}>{song}</li>
+        </ol>
+      </td>
+      <td className="border px-2 py-2 text-lg">{playlist.artists[index]}</td>
+      <td className="border px-2 py-2">
+        <audio controls>
+          <source src={playlist.music_files[index]} type="audio/mpeg" />
+        </audio>
+      </td>
+      <td className="border px-2 py-2 text-lg">{formatDuration(playlist.durations[index])}</td>
+    </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
+    ) : (
+      <p>No songs in this playlist yet.</p>
+    )}
+    <div className="w-1/8 bg-gray-800">
+      {playlist && playlist.songs && playlist.songs.length > 0 ? (
+        playlist.songs.map((song, index) => (
+          <div key={index} className="w-full bg-gray-800">
+            <img
+
+              src={playlist.covers[index]}
+              alt={`Cover for ${song.title}`}
+              className="w-40 h-40 p-4 object-cover"
+            />
+          </div>
+        ))
+      ) : null
+
+      }
     </div>
+  </div>
+<div className="w-full flex overflow-x-scroll py-2 border" style={{ scrollbarWidth: "none" }}>
+  {allPlaylists.map((pl) => (
+    <div
+      key={pl.id}
+      className="shadow-lg flex-shrink-0 w-48 h-48 mr-2 border-2 transform transition-all duration-500 hover:scale-110 hover:shadow-2xl hover:bg-white hover:bg-opacity-20"
+    >
+      <Link to={`/playlists/${pl.id}`}>
+        <img
+          className="shadow-lg object-cover w-full h-2/3 rounded"
+          src={pl.cover_url}
+          alt={pl.name}
+        />
+        <p className="text-center text-white">{pl.name}</p>
+      </Link>
+    </div>
+  ))}
+</div>
+
+</div>
+</div>
+
+</div>
   );
 }

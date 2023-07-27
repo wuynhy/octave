@@ -19,7 +19,7 @@ from queries.users import (
     UserOut,
     UsersOut,
     DuplicateUserError,
-    UserUpdate
+    UserUpdate,
 )
 
 
@@ -67,7 +67,6 @@ async def create_user(
     user_info: UserIn,
     repo: UserRepository = Depends(),
 ):
-
     hashed_password = authenticator.hash_password(user_info.password)
     try:
         user = await repo.create(user_info, hashed_password)
