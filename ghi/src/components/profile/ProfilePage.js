@@ -8,6 +8,8 @@ import Loader from "../Loader";
 import Error from "../Error";
 import { useDispatch } from "react-redux";
 import { setActiveSong } from "../../redux/features/playerSlice";
+import FriendsTabComponent from "../friends/FriendsTabComponent";
+import ErrorBoundary from "../friends/ErrorBoundary";
 import EditProfile from "./EditProfile";
 import UploadSong from "../UploadSong";
 import { MdAddCircleOutline } from "react-icons/md";
@@ -26,6 +28,66 @@ const ProfilePage = () => {
   const [searchUsername, setSearchUsername] = useState("");
   const navigate = useNavigate();
   const [userNotFound, setUserNotFound] = useState(false);
+  const [isFriend, setIsFriend] = useState(false);
+
+  const addFriend = (friendUsername) => {
+    fetch(`${process.env.REACT_APP_API_HOST}/friendships/${friendUsername}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((response) => response.json())
+      .then((friendshipCreated) => {
+        if (friendshipCreated) {
+          alert("Friend request sent successfully!");
+        } else {
+          alert("Failed to send friend request.");
+        }
+      });
+  };
+
+  const checkFriendship = (friendUsername) => {
+    fetch(
+      `${process.env.REACT_APP_API_HOST}/friendships/check/${friendUsername}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        setIsFriend(data);
+      });
+  };
+
+  useEffect(() => {
+    checkFriendship(username);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [username]);
+
+  const deleteFriend = (friendUsername) => {
+    fetch(`${process.env.REACT_APP_API_HOST}/friendships/${friendUsername}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((response) => {
+        if (response.ok) {
+          alert("Friendship deleted successfully!");
+        } else {
+          return response.json().then((data) => {
+            throw new Error(data.detail || "Failed to delete the friend.");
+          });
+        }
+      })
+      .catch((error) => {
+        alert(error.message);
+      });
+  };
 
   const ModalContent = ({ formType, onClose }) => {
     let formContent;
@@ -144,7 +206,7 @@ const ProfilePage = () => {
           (song) => song.uploader === username
         );
 
-        const showUploadButton = currentUser === username; 
+        const showUploadButton = currentUser === username;
 
         return (
           <>
@@ -200,6 +262,12 @@ const ProfilePage = () => {
         return <div>Playlists content</div>;
       case "Stages":
         return <div>Stages content</div>;
+      case "Friends":
+        return (
+          <ErrorBoundary>
+            <FriendsTabComponent currentUserID={user?.id} token={token} />
+          </ErrorBoundary>
+        );
       default:
         return null;
     }
@@ -281,11 +349,19 @@ const ProfilePage = () => {
                         >
                           Edit Profile
                         </button>
+                      ) : isFriend ? (
+                        <button
+                          className="bg-red-600 active:bg-red-700 uppercase text-white font-bold hover:shadow-md shadow text-xs px-4 py-2 rounded outline-none focus:outline-none sm:mr-2 mb-1 ease-linear transition-all duration-150"
+                          type="button"
+                          onClick={() => deleteFriend(username)}
+                        >
+                          End Friendship
+                        </button>
                       ) : (
                         <button
                           className="bg-pink-500 active:bg-pink-600 uppercase text-white font-bold hover:shadow-md shadow text-xs px-4 py-2 rounded outline-none focus:outline-none sm:mr-2 mb-1 ease-linear transition-all duration-150"
                           type="button"
-                          onClick={() => username}
+                          onClick={() => addFriend(username)}
                         >
                           Add Friend
                         </button>
@@ -314,7 +390,7 @@ const ProfilePage = () => {
                   </div>
                 </div>
                 <div className="text-center">
-                  <h3 className="text-4xl font-semibold leading-normal mb-2 text-pink-500 mb-2">
+                  <h3 className="text-4xl font-semibold leading-normal mb-2 text-pink-500">
                     {username}
                   </h3>
                   <p className="text-lg text-white-600">{bio}</p>
@@ -355,6 +431,17 @@ const ProfilePage = () => {
                       aria-selected="false"
                     >
                       Stages
+                    </button>
+                  </li>
+                  <li role="presentation">
+                    <button
+                      onClick={() => handleTabClick("Friends")}
+                      className="my-2 block border-x-0 border-b-2 border-t-0 border-transparent px-7 pt-4 text-xs font-medium uppercase leading-tight text-neutral-500 hover:isolate hover:border-transparent hover:bg-neutral-100 focus:isolate focus:border-transparent data-[te-nav-active]:border-primary data-[te-nav-active]:text-primary dark:text-neutral-400 dark:hover:bg-transparent dark:data-[te-nav-active]:border-primary-400 dark:data-[te-nav-active]:text-primary-400"
+                      role="tab"
+                      aria-controls="tabs-messages"
+                      aria-selected="false"
+                    >
+                      Friends
                     </button>
                   </li>
                   <div className="flex items-center ml-auto">

@@ -52,7 +52,9 @@ class FriendshipRepository:
         except Exception:
             return False
 
-    def create_friendship(self, user1: str, user2: str) -> Optional[FriendshipOut]:
+    async def create_friendship(
+        self, user1: str, user2: str
+    ) -> Optional[FriendshipOut]:
         try:
             with pool.connection() as conn:
                 with conn.cursor() as db:
@@ -83,17 +85,15 @@ class FriendshipRepository:
                         db.execute(
                             """
                             INSERT INTO friendships (user_id, friend_id, status)
-                            VALUES (%s, %s, 'pending');
+                            VALUES (%s, %s, 'pending') RETURNING id;
                             """,
                             [user1_id, user2_id],
                         )
-                        record = db.fetchone()
-                        if record is None:
-                            raise Exception("Failed to create friendship")
+                        db.fetchone()[0]
                     except Exception:
                         raise Exception("Failed to create friendship")
 
-                    return self.get(record[0])
+                    return True
 
         except Exception as e:
             raise Exception("Failed to create friendship: " + str(e))
@@ -213,9 +213,11 @@ class FriendshipRepository:
                 with conn.cursor() as db:
                     db.execute(
                         """
-                        SELECT f.id, f.user_id, f.friend_id, f.status
+                        SELECT f.id, f.user_id, u1.username AS user_username,
+                        f.friend_id, u2.username AS friend_username, f.status
                         FROM friendships AS f
-                        JOIN users AS u ON f.user_id = u.id
+                        JOIN users AS u1 ON f.user_id = u1.id
+                        JOIN users AS u2 ON f.friend_id = u2.id
                         """
                     )
                     friendships = []
@@ -223,35 +225,41 @@ class FriendshipRepository:
                         friendship = {
                             "id": row[0],
                             "user_id": row[1],
-                            "friend_id": row[2],
-                            "status": row[3],
+                            "user_username": row[2],
+                            "friend_id": row[3],
+                            "friend_username": row[4],
+                            "status": row[5],
                         }
                         friendships.append(friendship)
                     return friendships
         except Exception:
             raise Exception("Failed to retrieve all friendships")
 
-    def get(self, id: int) -> Optional[FriendshipOut]:
+    def get(self, id: int) -> Optional[Dict[str, Any]]:
         try:
             with pool.connection() as conn:
                 with conn.cursor() as db:
                     db.execute(
                         """
-                        SELECT id, user_id, friend_id, status
-                        FROM friendships
-                        WHERE id = %s
+                        SELECT f.id, f.user_id, u1.username AS user_username,
+                        f.friend_id, u2.username AS friend_username, f.status
+                        FROM friendships AS f
+                        JOIN users AS u1 ON f.user_id = u1.id
+                        JOIN users AS u2 ON f.friend_id = u2.id
+                        WHERE f.id = %s
                         """,
                         [id],
                     )
                     record = db.fetchone()
                     if record is None:
                         return None
-                    return FriendshipOut(
-                        id=record[0],
-                        user_id=record[1],
-                        friend_id=record[2],
-                        status=record[3],
-                    )
-
+                    return {
+                        "id": record[0],
+                        "user_id": record[1],
+                        "user_username": record[2],
+                        "friend_id": record[3],
+                        "friend_username": record[4],
+                        "status": record[5],
+                    }
         except Exception as e:
             raise Exception("Failed to retrieve friendship: " + str(e))
