@@ -9,7 +9,7 @@ friendship_repo = FriendshipRepository()
 
 
 @router.post("/friendships/{friend_username}", response_model=bool)
-def create_friendship(
+async def create_friendship(
     friend_username: str,
     user_data: dict = Depends(authenticator.get_current_account_data),
 ) -> bool:
@@ -23,10 +23,9 @@ def create_friendship(
         raise HTTPException(
             status_code=400, detail="Friendship already exists"
         )
-    friendship = friendship_repo.create_friendship(
+    friendship = await friendship_repo.create_friendship(
         current_user, friend_username
     )
-    print("friendship", friendship)
     if not friendship:
         raise HTTPException(
             status_code=400, detail="Friendship creation failed"
@@ -97,9 +96,7 @@ def get_all():
 
 
 @router.get("/friendships/{friendship_id}", response_model=FriendshipOut)
-def get(
-    friendship_id: int
-) -> FriendshipOut:
+def get(friendship_id: int) -> FriendshipOut:
     friendship = friendship_repo.get(friendship_id)
     if friendship is None:
         raise HTTPException(status_code=404, detail="Friendship not found")
