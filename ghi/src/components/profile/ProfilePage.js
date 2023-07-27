@@ -65,6 +65,7 @@ const ProfilePage = () => {
 
   useEffect(() => {
     checkFriendship(username);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [username]);
 
   const deleteFriend = (friendUsername) => {
@@ -389,7 +390,7 @@ const ProfilePage = () => {
                   </div>
                 </div>
                 <div className="text-center">
-                  <h3 className="text-4xl font-semibold leading-normal mb-2 text-pink-500 mb-2">
+                  <h3 className="text-4xl font-semibold leading-normal mb-2 text-pink-500">
                     {username}
                   </h3>
                   <p className="text-lg text-white-600">{bio}</p>

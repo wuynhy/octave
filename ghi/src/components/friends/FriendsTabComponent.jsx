@@ -73,12 +73,14 @@ function FriendsTabComponent() {
 
   useEffect(() => {
     fetchAllUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (allUsers.length) {
       fetchFriendshipData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUserID, auth.token, allUsers]);
 
   const acceptRequest = (friendUsername) => {

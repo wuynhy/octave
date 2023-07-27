@@ -213,7 +213,8 @@ class FriendshipRepository:
                 with conn.cursor() as db:
                     db.execute(
                         """
-                        SELECT f.id, f.user_id, u1.username AS user_username, f.friend_id, u2.username AS friend_username, f.status
+                        SELECT f.id, f.user_id, u1.username AS user_username,
+                        f.friend_id, u2.username AS friend_username, f.status
                         FROM friendships AS f
                         JOIN users AS u1 ON f.user_id = u1.id
                         JOIN users AS u2 ON f.friend_id = u2.id
@@ -240,7 +241,8 @@ class FriendshipRepository:
                 with conn.cursor() as db:
                     db.execute(
                         """
-                        SELECT f.id, f.user_id, u1.username AS user_username, f.friend_id, u2.username AS friend_username, f.status
+                        SELECT f.id, f.user_id, u1.username AS user_username,
+                        f.friend_id, u2.username AS friend_username, f.status
                         FROM friendships AS f
                         JOIN users AS u1 ON f.user_id = u1.id
                         JOIN users AS u2 ON f.friend_id = u2.id
