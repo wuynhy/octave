@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import useToken from "@galvanize-inc/jwtdown-for-react";
 import { useCallback } from "react";
+import UpdatePlaylist from "./UpdatePlaylist";
+import { PlaylistContext } from "./PlaylistContext";
 
-export default function PlaylistDetail() {
+export default function PlaylistDetail({ onBack, playlistId }) {
   const { token } = useToken();
-  const { playlistId } = useParams();
   const [playlist, setPlaylist] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -13,7 +14,8 @@ export default function PlaylistDetail() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const navigate = useNavigate();
+  const [updateModalVisible, setUpdateModalVisible] = useState(false);
+  const { setSelectedPlaylist } = React.useContext(PlaylistContext);
 
   const fetchPlaylist = useCallback(async () => {
     try {
@@ -33,7 +35,8 @@ export default function PlaylistDetail() {
 
   useEffect(() => {
     fetchPlaylist();
-  }, [fetchPlaylist]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const deletePlaylist = async () => {
     try {
@@ -46,10 +49,8 @@ export default function PlaylistDetail() {
           },
         }
       );
-
       if (response.ok) {
-        console.log(`Playlist with id: ${playlistId} was deleted.`);
-        navigate("/playlists");
+        setSelectedPlaylist(null);
       } else {
         console.log("Playlist could not be deleted.");
       }
@@ -57,21 +58,16 @@ export default function PlaylistDetail() {
       console.error("Error:", error);
     }
   };
+
   const formatDuration = (durationInSeconds) => {
     const minutes = Math.floor(durationInSeconds / 60);
     const seconds = durationInSeconds % 60;
     return `${minutes}:${String(seconds).padStart(2, "0")}`;
   };
 
-  const searchSongs = async () => {
-    console.log(`Search term: ${searchTerm}`);
-    const requestUrl = `${
-      process.env.REACT_APP_API_HOST
-    }/songs?title=${encodeURIComponent(searchTerm)}`;
-    console.log(`Request URL: ${requestUrl}`);
-
+  const searchSongs = useCallback(async () => {
     try {
-      const response = await fetch(requestUrl, {
+      const response = await fetch(`${process.env.REACT_APP_API_HOST}/songs`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -79,21 +75,29 @@ export default function PlaylistDetail() {
 
       if (response.ok) {
         const songs = await response.json();
-        setSearchResults(songs);
-
-        console.log("Search results:", songs);
+        const filteredSongs = songs.filter(
+          (song) =>
+            song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            song.artist.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setSearchResults(filteredSongs);
       } else {
-        console.log("Song search failed.");
+        console.log("Failed to fetch songs.");
       }
     } catch (error) {
       console.error("Error:", error);
     }
-  };
+  }, [searchTerm, token]);
+  
+  useEffect(() => {
+    if (searchTerm !== "") {
+      searchSongs();
+    } else {
+      setSearchResults([]);
+    }
+  }, [searchTerm, searchSongs]);
 
   async function addSongToPlaylist(songId) {
-    console.log("addSongToPlaylist function called with songId:", songId); // log the songId passed to function
-    console.log("Current playlistId state:", playlistId); // log the playlistId state
-
     try {
       const response = await fetch(
         `${process.env.REACT_APP_API_HOST}/playlists/${playlistId}/add_song/${songId}`,
@@ -105,16 +109,12 @@ export default function PlaylistDetail() {
         }
       );
       if (response.ok) {
-        console.log(`Song with id: ${songId} was added to the playlist.`);
         fetchPlaylist();
       } else {
         console.log("Song could not be added to the playlist.");
       }
     } catch (error) {
       console.error("Error:", error);
-
-      console.log(`Song with id: ${songId} was added to the playlist.`);
-      // Reload playlist songs after adding a new one
       fetchPlaylist();
     }
   }
@@ -131,16 +131,38 @@ export default function PlaylistDetail() {
     };
   }, [dropdownRef]);
 
+  const removeSongFromPlaylist = async (songName) => {
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_API_HOST}/playlists/${playlistId}/remove_song/${songName}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (response.ok) {
+        fetchPlaylist();
+      } else {
+        console.log("Song could not be removed from the playlist.");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      fetchPlaylist();
+    }
+  };
+
   return (
     <div className="bg-black text-white min-h-screen p-10 font-sans">
       <div className="flex justify-between items-start mb-5">
         {playlist && (
           <>
             <div className="flex items-center">
-              <div className="flex justify-center items-center bg-gray-900 rounded w-72 h-72">
+              <div className="flex justify-center items-center bg-gray-900 rounded w-64 h-64">
                 <Link to={`/playlists/${playlist.id}`}>
                   <img
-                    className="w-64 h-64 mb-2 object-cover rounded"
+                    className="w-52 h-52 mb-2 object-cover rounded"
                     src={playlist.cover_url}
                     alt={playlist.name}
                   />
@@ -179,12 +201,15 @@ export default function PlaylistDetail() {
                   className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-gray-700 ring-1 ring-black ring-opacity-5 divide-y divide-gray-600 text-gray-300"
                 >
                   <div className="py-1">
-                    <Link
-                      to={`/update-playlist/${playlistId}`}
-                      className="block px-4 py-2 text-sm hover:bg-gray-600"
+                    <button
+                      onClick={() => {
+                        setUpdateModalVisible(true);
+                        setModalVisible(false);
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-600"
                     >
                       Update Playlist
-                    </Link>
+                    </button>
                   </div>
                   <div className="py-1">
                     <button
@@ -196,19 +221,22 @@ export default function PlaylistDetail() {
                   </div>
                   <div className="py-1">
                     <button
-                      onClick={() => setModalVisible(true)}
+                      onClick={() => {
+                        setUpdateModalVisible(false);
+                        setModalVisible(true);
+                      }}
                       className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-600"
                     >
                       Add Songs
                     </button>
                   </div>
                   <div className="py-1">
-                    <Link
-                      to="/playlists"
-                      className="block px-4 py-2 text-sm hover:bg-gray-600"
+                    <button
+                      onClick={onBack}
+                      className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-600"
                     >
-                      Back to Playlists
-                    </Link>
+                      Back To Playlists
+                    </button>
                   </div>
                 </div>
               )}
@@ -216,105 +244,105 @@ export default function PlaylistDetail() {
           </>
         )}
       </div>
+      {updateModalVisible && (
+        <div className="fixed z-10 inset-0 overflow-y-auto flex items-center justify-center pb-20">
+          <div className="bg-gray-200 text-black rounded-lg shadow-xl transform transition-all sm:max-w-lg sm:w-full relative">
+            <button
+              onClick={() => setUpdateModalVisible(false)}
+              className="absolute top-0 right-0 mt-3 mr-2 hover:bg-red-600 text-white rounded-full p-2"
+            >
+              X
+            </button>
+            <UpdatePlaylist />
+          </div>
+        </div>
+      )}
 
       {modalVisible && (
-        <div className="fixed z-10 inset-0 overflow-y-auto">
-          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <span
-              className="hidden sm:inline-block sm:align-middle sm:h-screen"
-              aria-hidden="true"
-            >
-              &#8203;
-            </span>
-            <div
-              className="inline-block align-bottom bg-gray-200 text-gray-900 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
-              style={{ fontFamily: "Arial, sans-serif" }}
-            >
-              <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                <div className="sm:flex sm:items-start">
-                  <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+        <div className="fixed z-10 inset-0 overflow-y-auto flex items-center justify-center pb-20">
+          <div
+            className="bg-gray-200 text-black rounded-lg shadow-xl transform transition-all sm:max-w-lg sm:w-full"
+            style={{ fontFamily: "Arial, sans-serif" }}
+          >
+            <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+              <div className="sm:flex sm:items-start">
+                <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                  <div className="flex">
                     <input
                       type="text"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="bg-gray-800 text-white rounded p-2 w-full"
+                      className="bg-gray-800 text-black rounded p-2 flex-1 mr-2"
                     />
                     <button
                       onClick={searchSongs}
-                      className="bg-green-500 hover:bg-green-600 text-white rounded p-2 mt-2 w-full"
+                      className="bg-pink-500 hover:bg-pink-600 text-white rounded p-2"
                     >
                       Search
                     </button>
                   </div>
                 </div>
-                {searchResults.length > 0 && (
-                  <div>
-                    {searchResults.map((song) => (
-                      <div
-                        key={song.id}
-                        className="flex justify-between items-center p-2 rounded transition-colors duration-200 hover:bg-gray-800"
-                      >
-                        <p>{song.title}</p>
-                        <button
-                          onClick={() => {
-                            console.log(
-                              "Add song button clicked for songId:",
-                              song.id
-                            );
-                            addSongToPlaylist(song.id);
-                          }}
-                          className="text-xs py-1 px-2 bg-green-500 hover:bg-green-600 text-white rounded cursor-pointer"
-                        >
-                          Add Song
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
-              <div className="bg-gray-800 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <button
-                  type="button"
-                  className="mt-3 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                  onClick={() => setModalVisible(false)}
-                >
-                  Close
-                </button>
-                {playlistSongs.length > 0 &&
-                  playlistSongs.map((song) => (
-                    <div key={song.id}>
-                      <h2>{song.title}</h2>
-                      <p>{formatDuration(song.duration)}</p>
+              {searchResults.length > 0 && (
+                <div>
+                  {searchResults.map((song) => (
+                    <div
+                      key={song.id}
+                      className="flex justify-between items-center p-2 rounded transition-colors duration-200 hover:bg-gray-400"
+                    >
+                      <div className="flex-grow">
+                        <p className="font-bold">{song.title}</p>
+                        <p className="text-sm text-gray-500">{song.artist}</p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          addSongToPlaylist(song.id);
+                        }}
+                        className="text-xs py-1 px-2 bg-pink-500 hover:bg-pink-600 text-white rounded cursor-pointer"
+                      >
+                        Add Song
+                      </button>
                     </div>
                   ))}
-              </div>
+                </div>
+              )}
+            </div>
+            <div className="bg-gray-400 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+              <button
+                type="button"
+                className="mt-3 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-pink-500 text-base font-medium text-white hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                onClick={() => setModalVisible(false)}
+              >
+                Close
+              </button>
+              {playlistSongs.length > 0 &&
+                playlistSongs.map((song) => (
+                  <div key={song.id}>
+                    <h2>{song.title}</h2>
+                    <p>{formatDuration(song.duration)}</p>
+                  </div>
+                ))}
             </div>
           </div>
         </div>
       )}
-
       <div className="border border-gray-800 p-4 rounded-lg bg-gray-800 flex">
         {playlist && playlist.songs && playlist.songs.length > 0 ? (
           <div className="w-3/4 mr-4">
-            <table className="table-auto w-full">
-              <thead>
+            <table className="table-auto w-full text-center">
+              <thead className="text-center">
                 <tr>
-                  <th className="border px-2 py-2 text-lg font-semibold text-left">
-                    #
-                  </th>
-                  <th className="border px-2 py-2 text-lg font-semibold text-left">
+                  <th className="border px-2 py-2 text-lg font-semibold"></th>
+                  <th className="border px-2 py-2 text-lg font-semibold">
                     Cover
                   </th>
-                  <th className="border px-2 py-2 text-lg font-semibold text-left">
+                  <th className="border px-2 py-2 text-lg font-semibold">
                     Title
                   </th>
-                  <th className="border px-2 py-2 text-lg font-semibold text-left">
+                  <th className="border px-2 py-2 text-lg font-semibold">
                     Artist
                   </th>
-                  <th className="border px-2 py-2 text-lg font-semibold text-left">
-                    Music File
-                  </th>
-                  <th className="border px-2 py-2 text-lg font-semibold text-left">
+                  <th className="border px-2 py-2 text-lg font-semibold">
                     <div style={{ fontFamily: "Montserrat, sans-serif" }}>
                       Duration
                     </div>
@@ -324,32 +352,34 @@ export default function PlaylistDetail() {
               <tbody>
                 {playlist.songs.map((song, index) => (
                   <tr key={index}>
-                    <td className="border px-2 py-2 text-lg">{index + 1}</td>
-                    <td className="border px-2 py-2">
+                    <td className="border px-2 py-2 text-lg align-middle">
+                      {index + 1}
+                    </td>
+                    <td className="border px-2 py-2 flex justify-center items-center">
                       <img
-                        className="w-10 h-10 object-cover rounded"
+                        className="w-14 h-14 object-cover rounded align-middle"
                         src={playlist.covers[index]}
                         alt={`Cover for ${song}`}
                       />
                     </td>
-                    <td className="border px-2 py-2">
+                    <td className="border px-2 py-2 text-lg align-middle">
                       <ol style={{ margin: 0, padding: 0 }}>
                         <li style={{ marginBottom: "10px" }}>{song}</li>
                       </ol>
                     </td>
-                    <td className="border px-2 py-2 text-lg">
+                    <td className="border px-2 py-2 text-lg align-middle">
                       {playlist.artists[index]}
                     </td>
-                    <td className="border px-2 py-2">
-                      <audio controls>
-                        <source
-                          src={playlist.music_files[index]}
-                          type="audio/mpeg"
-                        />
-                      </audio>
-                    </td>
-                    <td className="border px-2 py-2 text-lg">
+                    <td className="border px-2 py-2 text-lg align-middle">
                       {formatDuration(playlist.durations[index])}
+                    </td>
+                    <td className="border px-2 py-2 text-lg align-middle text-right">
+                      <button
+                        onClick={() => removeSongFromPlaylist(song)}
+                        className="text-xs py-1 px-2 border border-pink-500 text-pink-500 hover:text-white hover:bg-pink-500 rounded cursor-pointer"
+                      >
+                        Remove Song
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -359,7 +389,6 @@ export default function PlaylistDetail() {
         ) : (
           <p>No songs in this playlist yet.</p>
         )}
-        <div className="w-1/4 bg-gray-800"></div>
       </div>
     </div>
   );

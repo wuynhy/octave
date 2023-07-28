@@ -1,4 +1,4 @@
-import { useState, } from "react";
+import { useState } from "react";
 import useToken from "@galvanize-inc/jwtdown-for-react";
 import { useNavigate } from "react-router-dom";
 import { VscEyeClosed, VscEye } from "react-icons/vsc";
@@ -16,7 +16,7 @@ const SignupForm = () => {
     const accountData = {
       username: username,
       password: password,
-      email: email
+      email: email,
     };
     register(accountData, `${process.env.REACT_APP_API_HOST}/signup`);
     e.target.reset();

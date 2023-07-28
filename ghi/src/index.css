@@ -24,7 +24,6 @@ code {
     monospace;
 }
 
-/* Active Navigation Link */
 .active {
   @apply text-cyan-500;
 }
@@ -53,13 +52,11 @@ code {
   transition: all 0.3s ease-in-out;
 }
 
-/* Hide scrollbar for Chrome, Safari and Opera */
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
 
-/* Hide scrollbar for IE, Edge and Firefox */
 .hide-scrollbar {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

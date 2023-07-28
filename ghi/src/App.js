@@ -6,17 +6,11 @@ import SignupForm from "./components/auth/SignupForm";
 import Home from "./page/Home";
 import PrivateRoutes from "./utils/PrivateRoutes";
 import ChatRoom from "./components/chat/ChatRoom";
-import Stage from "./Stage";
+import Stage from "./components/stages/Stage";
 import Main from "./page/Main";
 import ProfilePage from "./components/profile/ProfilePage";
 import SidebarLeft from "./components/nav/Nav";
-import EditProfile from "./components/profile/EditProfile";
-import Playlists from "./components/playlists/Playlists";
-import PlaylistDetail from "./components/playlists/PlaylistDetail";
-import CreatePlaylist from "./components/playlists/CreatePlaylist";
-import UpdatePlaylist from "./components/playlists/UpdatePlaylist";
-import CreateStages from "./CreateStage";
-import ListStages from "./ListStages";
+
 function App() {
   const baseUrl = process.env.REACT_APP_API_HOST;
   const domain = /https:\/\/[^/]+/;
@@ -43,8 +37,6 @@ function App() {
             <Route exact path="/" element={<Main />} />
             <Route exact path="/signup" element={<SignupForm />} />
             <Route exact path="/login" element={<LoginForm />} />
-            <Route exact path="/CreateStage" element={<CreateStages />} />
-            <Route exact path="/ListStages" element={<ListStages />} />
             <Route
               element={
                 <div style={{ display: "flex" }}>
@@ -61,21 +53,6 @@ function App() {
                 exact
                 path="/profile/:username"
                 element={<ProfilePage />}
-              />
-              <Route
-                exact
-                path="/profile/:username/edit"
-                element={<EditProfile />}
-              />
-              <Route path="/playlists/" element={<Playlists />} />
-              <Route
-                path="/playlists/:playlistId"
-                element={<PlaylistDetail />}
-              />
-              <Route path="/create_playlist" element={<CreatePlaylist />} />
-              <Route
-                path="/update-playlist/:playlistId"
-                element={<UpdatePlaylist />}
               />
             </Route>
           </Routes>

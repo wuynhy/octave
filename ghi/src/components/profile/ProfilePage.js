@@ -1,21 +1,23 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useContext } from "react";
 import useToken from "@galvanize-inc/jwtdown-for-react";
 import { useParams } from "react-router-dom";
 import jwt_decode from "jwt-decode";
-import { useGetAllSongsQuery } from "../../redux/services/musicPlayerApi";
-import SongCard from "../SongCard";
-import Loader from "../Loader";
-import Error from "../Error";
+import Error from "../Musicplayer/Error";
 import { useDispatch } from "react-redux";
 import { setActiveSong } from "../../redux/features/playerSlice";
 import FriendsTabComponent from "../friends/FriendsTabComponent";
 import ErrorBoundary from "../friends/ErrorBoundary";
 import EditProfile from "./EditProfile";
-import UploadSong from "../UploadSong";
+import UploadSong from "../songs/UploadSong";
 import { MdAddCircleOutline } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
-import CreateStages from "../../CreateStage";
-import ListStages from "../../ListStages"
+import CreateStages from "../stages/CreateStage";
+import ListStages from "../stages/ListStages";
+import Playlists from "../playlists/Playlists";
+import CreatePlaylist from "../playlists/CreatePlaylist";
+import SongsList from "../songs/SongLists";
+import PlaylistDetail from "../playlists/PlaylistDetail";
+import { PlaylistContext } from "../playlists/PlaylistContext";
 
 const ProfilePage = () => {
   const dispatch = useDispatch();
@@ -23,12 +25,11 @@ const ProfilePage = () => {
   const [user, setUser] = useState(null);
   const { username } = useParams();
   const [activeTab, setActiveTab] = useState("Songs");
-  const { data: allSongs, isFetching, error } = useGetAllSongsQuery();
-  const userSongs = allSongs || [];
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
   const [searchUsername, setSearchUsername] = useState("");
   const navigate = useNavigate();
+  const { selectedPlaylist, setSelectedPlaylist } = useContext(PlaylistContext);
   const [userNotFound, setUserNotFound] = useState(false);
   const [isFriend, setIsFriend] = useState(false);
 
@@ -71,12 +72,15 @@ const ProfilePage = () => {
   }, [username]);
 
   const deleteFriend = (friendUsername) => {
-    fetch(`${process.env.REACT_APP_API_HOST}/friendships/${friendUsername}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
+    fetch(
+      `${process.env.REACT_APP_API_HOST}/friendships/${friendUsername}/delete`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
       .then((response) => {
         if (response.ok) {
           alert("Friendship deleted successfully!");
@@ -102,7 +106,7 @@ const ProfilePage = () => {
         formContent = <EditProfile />;
         break;
       case "PlaylistForm":
-        // formContent = <UploadPlaylist />;
+        formContent = <CreatePlaylist onClose={onClose} />;
         break;
       case "StageForm":
         formContent = <CreateStages />;
@@ -115,7 +119,7 @@ const ProfilePage = () => {
       <div className="modal">
         <div
           className="modal-box min-h-screen"
-          style={{ maxWidth: "100%", width: "40%" }}
+          style={{ maxWidth: "100%", width: "45%" }}
         >
           <button
             className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
@@ -195,6 +199,14 @@ const ProfilePage = () => {
     setActiveTab(tab);
   };
 
+  const handlePlaylistClick = (playlist) => {
+    setSelectedPlaylist(playlist);
+  };
+
+  const handleBackClick = () => {
+    setSelectedPlaylist(null);
+  };
+
   useEffect(() => {
     dispatch(setActiveSong(null));
   }, [dispatch]);
@@ -202,15 +214,8 @@ const ProfilePage = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case "Songs":
-        if (isFetching) return <Loader title="Loading songs..." />;
-        if (error) return <Error />;
-        const userUploadedSongs = userSongs.filter(
-          (song) => song.uploader === username
-        );
-
         const showUploadButton = currentUser === username;
-
-
+        setSelectedPlaylist(null);
         return (
           <>
             {showUploadButton && (
@@ -243,64 +248,104 @@ const ProfilePage = () => {
                 </div>
               </>
             )}
-            {userUploadedSongs.length === 0 ? (
-              <div className="flex justify-center mt-8 text-lg font-semibold text-white">
-                No songs available.
-              </div>
-            ) : (
-              <div className="flex flex-wrap sm:justify-start justify-center gap-8">
-                {userUploadedSongs.map((song, index) => (
-                  <SongCard
-                    key={song.id}
-                    song={song}
-                    allSongs={userSongs}
-                    i={index}
-                  />
-                ))}
-              </div>
-            )}
+            <SongsList username={username} />
           </>
         );
       case "Playlists":
-        return <div>Playlists content</div>;
-      case "Stages":
-        if (isFetching) return <Loader title="Loading songs..." />;
-        if (error) return <Error />;
+        const showPlaylistButton = currentUser === username;
         return (
           <>
-            <input
-              type="checkbox"
-              id="my_modal_7"
-              className="modal-toggle"
-              checked={isModalOpen}
-              onChange={() => setIsModalOpen(!isModalOpen)}
-            />
-            {isModalOpen && (
-              <ModalContent
-                formType="StageForm"
-                onClose={() => setIsModalOpen(false)}
+            {selectedPlaylist ? (
+              <PlaylistDetail
+                playlistId={selectedPlaylist.id}
+                onBack={handleBackClick}
               />
+            ) : (
+              <>
+                {showPlaylistButton && (
+                  <>
+                    <input
+                      type="checkbox"
+                      id="modal_createPlaylist"
+                      className="modal-toggle"
+                      checked={isModalOpen}
+                      onChange={() => setIsModalOpen(!isModalOpen)}
+                    />
+                    {isModalOpen && (
+                      <ModalContent
+                        formType="PlaylistForm"
+                        onClose={() => setIsModalOpen(false)}
+                      />
+                    )}
+                    <div className="flex justify-end">
+                      <label
+                        id="modal_createPlaylist"
+                        htmlFor="modal_createPlaylist"
+                        className="btn flex items-center justify-center w-15 h-10"
+                        style={{
+                          backgroundColor: "transparent",
+                          marginRight: "10px",
+                        }}
+                      >
+                        <MdAddCircleOutline size={25} />
+                      </label>
+                    </div>
+                  </>
+                )}
+                <Playlists
+                  username={username}
+                  handlePlaylistClick={handlePlaylistClick}
+                />
+              </>
             )}
-
-            <div className="flex justify-end">
-              <label
-                id="modal_7"
-                htmlFor="my_modal_7"
-                className="btn flex items-center justify-center w-15 h-10"
-                style={{ backgroundColor: "transparent", marginRight: "10px" }}
-              >
-                <MdAddCircleOutline size={25} />
-              </label>
-            </div>
-            <div className="flex flex-wrap sm:justify-start justify-center gap-8">
-                <ListStages/>
-            </div>
+          </>
+        );
+      case "Stages":
+        setSelectedPlaylist(null);
+        const showStageButton = currentUser === username;
+        return (
+          <>
+            {showStageButton && (
+              <>
+                <input
+                  type="checkbox"
+                  id="modal_createStage"
+                  className="modal-toggle"
+                  checked={isModalOpen}
+                  onChange={() => setIsModalOpen(!isModalOpen)}
+                />
+                {isModalOpen && (
+                  <ModalContent
+                    formType="StageForm"
+                    onClose={() => setIsModalOpen(false)}
+                  />
+                )}
+                <div className="flex justify-end">
+                  <label
+                    id="modal_createStage"
+                    htmlFor="modal_createStage"
+                    className="btn flex items-center justify-center w-15 h-10"
+                    style={{
+                      backgroundColor: "transparent",
+                      marginRight: "10px",
+                    }}
+                  >
+                    <MdAddCircleOutline size={25} />
+                  </label>
+                </div>
+              </>
+            )}
+            <ListStages stageFilter={username} />
           </>
         );
       case "Friends":
+        setSelectedPlaylist(null);
         return (
           <ErrorBoundary>
-            <FriendsTabComponent currentUserID={user?.id} token={token} />
+            <FriendsTabComponent
+              currentUserID={user?.id}
+              token={token}
+            />
           </ErrorBoundary>
         );
       default:
@@ -324,7 +369,7 @@ const ProfilePage = () => {
           style={{ overflow: "hidden" }}
         >
           <div
-            className="absolute top-0 w-full h-full bg-center bg-cover"
+            className="absolute top-0 w-full h-screen bg-center bg-cover"
             style={{
               backgroundImage:
                 "url('https://images.unsplash.com/photo-1499336315816-097655dcfbda?ixlib=rb-1.2.1&amp;ixid=eyJhcHBfaWQiOjEyMDd9&amp;auto=format&amp;fit=crop&amp;w=2710&amp;q=80')",
@@ -356,10 +401,13 @@ const ProfilePage = () => {
             </svg>
           </div>
         </section>
-        <section className="relative pt-1 w-screen h-screen bg-blueGray-200 -mt-1/4">
+        <section
+          className="relative pt-1 w-screen h-full bg-gray-300 -mt-1/4"
+          style={{ paddingBottom: "100px", maxHeight: "5000px" }}
+        >
           <div className="container mx-auto px-4 pt-16">
             <div className="relative flex-col min-w-0 break-words bg-slate-600 w-full mb-5 shadow-xl rounded-lg -mt-64 ml-0">
-              <div className="px-6">
+              <div className="px-6" style={{ minHeight: "500px" }}>
                 <div className="flex flex-wrap justify-center">
                   <div className="w-full lg:w-3/12 px-4 lg:order-2 flex justify-center">
                     <div className="hidden sm:block h-32 w-32 mr-4 rounded-full overflow-hidden relative top-[-60px] ">
@@ -390,7 +438,7 @@ const ProfilePage = () => {
                           type="button"
                           onClick={() => deleteFriend(username)}
                         >
-                          End Friendship
+                          Remove Friend
                         </button>
                       ) : (
                         <button
@@ -469,15 +517,17 @@ const ProfilePage = () => {
                     </button>
                   </li>
                   <li role="presentation">
-                    <button
-                      onClick={() => handleTabClick("Friends")}
-                      className="my-2 block border-x-0 border-b-2 border-t-0 border-transparent px-7 pt-4 text-xs font-medium uppercase leading-tight text-neutral-500 hover:isolate hover:border-transparent hover:bg-neutral-100 focus:isolate focus:border-transparent data-[te-nav-active]:border-primary data-[te-nav-active]:text-primary dark:text-neutral-400 dark:hover:bg-transparent dark:data-[te-nav-active]:border-primary-400 dark:data-[te-nav-active]:text-primary-400"
-                      role="tab"
-                      aria-controls="tabs-messages"
-                      aria-selected="false"
-                    >
-                      Friends
-                    </button>
+                    {currentUser === username && (
+                      <button
+                        onClick={() => handleTabClick("Friends")}
+                        className="my-2 block border-x-0 border-b-2 border-t-0 border-transparent px-7 pt-4 text-xs font-medium uppercase leading-tight text-neutral-500 hover:isolate hover:border-transparent hover:bg-neutral-100 focus:isolate focus:border-transparent data-[te-nav-active]:border-primary data-[te-nav-active]:text-primary dark:text-neutral-400 dark:hover:bg-transparent dark:data-[te-nav-active]:border-primary-400 dark:data-[te-nav-active]:text-primary-400"
+                        role="tab"
+                        aria-controls="tabs-messages"
+                        aria-selected="false"
+                      >
+                        Friends
+                      </button>
+                    )}
                   </li>
                   <div className="flex items-center ml-auto">
                     {userNotFound && (

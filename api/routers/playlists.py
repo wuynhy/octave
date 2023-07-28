@@ -15,7 +15,7 @@ from queries.playlists import (
     PlaylistRepository,
     Error,
 )
-
+from urllib.parse import unquote
 from authenticator import authenticator
 
 router = APIRouter()
@@ -172,6 +172,15 @@ async def add_song_to_playlist(playlist_id: int, song_id: int):
         raise HTTPException(status_code=400, detail="Song already exists in the playlist.")
 
     success = await repo.add_song_to_playlist(playlist_id, song_id)
+    if not success:
+        raise HTTPException(status_code=500, detail="Internal server error.")
+    return success
+
+
+@router.delete("/playlists/{playlist_id}/remove_song/{song_title}")
+async def remove_song_from_playlist(playlist_id: int, song_title: str):
+    song_title = unquote(song_title)
+    success = await repo.delete_song_from_playlist(playlist_id, song_title)
     if not success:
         raise HTTPException(status_code=500, detail="Internal server error.")
     return success

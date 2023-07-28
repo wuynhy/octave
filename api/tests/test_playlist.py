@@ -113,10 +113,7 @@ def test_get_one_playlist(monkeypatch):
     monkeypatch.setattr(
         PlaylistRepository, "get_playlist_by_id", TestPlaylistQueries.get
     )
-    print("expected_response", vars(dummyPlaylist[0]))
-
     response = client.get("/playlists/1")
-    print("response", response.json())
     expected_response = vars(dummyPlaylist[0])
     assert response.status_code == 200
     assert response.json() == expected_response

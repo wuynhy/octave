@@ -84,7 +84,7 @@ function FriendsTabComponent() {
   }, [currentUserID, auth.token, allUsers]);
 
   const acceptRequest = (friendUsername) => {
-    fetch(`${process.env.REACT_APP_API_HOST}/friendships/${friendUsername}/`, {
+    fetch(`${process.env.REACT_APP_API_HOST}/friendships/${friendUsername}`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${auth.token}`,
@@ -107,7 +107,7 @@ function FriendsTabComponent() {
 
   const denyRequest = (friendUsername) => {
     fetch(
-      `${process.env.REACT_APP_API_HOST}/friendships/${friendUsername}/unfollow_pending`,
+      `${process.env.REACT_APP_API_HOST}/friendships/${friendUsername}/delete`,
       {
         method: "DELETE",
         headers: {
@@ -121,6 +121,7 @@ function FriendsTabComponent() {
           setFriendRequests((prevRequests) =>
             prevRequests.filter((f) => f.user_username !== friendUsername)
           );
+          fetchFriendshipData();
         }
       });
   };

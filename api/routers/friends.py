@@ -33,7 +33,7 @@ async def create_friendship(
     return True
 
 
-@router.put("/friendships/{friend_username}/", response_model=bool)
+@router.put("/friendships/{friend_username}", response_model=bool)
 def accept_friendship(
     friend_username: str,
     user_data: dict = Depends(authenticator.get_current_account_data),
@@ -55,7 +55,7 @@ def accept_friendship(
     return accepted
 
 
-@router.delete("/friendships/{friend_username}", response_model=bool)
+@router.delete("/friendships/{friend_username}/delete", response_model=bool)
 def delete_friendship(
     friend_username: str,
     user_data: dict = Depends(authenticator.get_current_account_data),

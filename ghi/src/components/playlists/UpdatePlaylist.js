@@ -31,12 +31,12 @@ export default function UpdatePlaylist() {
         setDescription(playlistData.description);
       } catch (error) {
         console.error("Error fetching playlist:", error);
-        // Handle error, e.g., show a toast or redirect to an error page.
       }
     };
 
     fetchPlaylist();
-  }, [token, playlistId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playlistId]);
 
   const handleNameChange = (event) => {
     setName(event.target.value);

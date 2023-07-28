@@ -16,6 +16,9 @@ export const musicPlayerApi = createApi({
     },
   }),
   endpoints: (builder) => ({
+    getUser: builder.query({
+      query: () => "token",
+    }),
     getSongById: builder.query({
       query: (song_id) => `songs/${song_id}`,
     }),
@@ -23,8 +26,9 @@ export const musicPlayerApi = createApi({
       query: () => "songs",
     }),
     createSong: builder.mutation({
-      query: ({ title, artist, music_file, cover, genres }) => {
+      query: ({ uploader, title, artist, music_file, cover, genres }) => {
         const formData = new FormData();
+        formData.append("uploader", uploader);
         formData.append("title", title);
         formData.append("artist", artist);
         formData.append("music_file", music_file);
@@ -69,4 +73,5 @@ export const {
   useCreateSongMutation,
   useUpdateSongMutation,
   useDeleteSongMutation,
+  useGetUserQuery,
 } = musicPlayerApi;

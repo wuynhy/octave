@@ -428,3 +428,41 @@ class PlaylistRepository:
         except Exception as e:
             print(f"Error checking if song is in playlist: {e}")
             return False
+
+    async def delete_song_from_playlist(self, playlist_id: int, song_title: str):
+        try:
+            with pool.connection() as conn:
+                with conn.cursor() as db:
+                    db.execute(
+                        """
+                        SELECT id FROM songs WHERE title = %s;
+                        """,
+                        [song_title],
+                    )
+                    song_ids = db.fetchall()
+                    if song_ids is None or len(song_ids) == 0:
+                        raise Exception("Song not found")
+
+                    for song_id in song_ids:
+                        song_id = song_id[0]
+                        db.execute(
+                            """
+                            SELECT * FROM playlist_songs
+                            WHERE playlist_id = %s AND song_id = %s;
+                            """,
+                            [playlist_id, song_id],
+                        )
+                        song_in_playlist = db.fetchone()
+                        if song_in_playlist is not None:
+                            db.execute(
+                                """
+                                DELETE FROM playlist_songs
+                                WHERE playlist_id = %s AND song_id = %s;
+                                """,
+                                [playlist_id, song_id],
+                            )
+                            return True
+                    raise Exception("Song not found in playlist")
+        except Exception as e:
+            print(f"Error deleting song from playlist: {e}")
+            return False

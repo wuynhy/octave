@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import useToken from "@galvanize-inc/jwtdown-for-react";
-import "./profile/profile.css";
+import "../profile/profile.css";
 import Select from "react-select";
 
 function UploadSong() {
@@ -13,6 +13,7 @@ function UploadSong() {
   const [selectValue, setSelectValue] = useState([]);
   const [user, setUser] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessages, setErrorMessages] = useState(null);
   const { token } = useToken();
   const musicFileRef = useRef();
   const coverRef = useRef();
@@ -47,6 +48,7 @@ function UploadSong() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setIsLoading(true);
+    setErrorMessages(null);
     const formData = new FormData();
     formData.append("uploader", user_id);
     formData.append("title", title);
@@ -55,14 +57,18 @@ function UploadSong() {
     formData.append("cover", cover);
     formData.append("genres", selectedGenres.join(","));
 
+    for (let pair of formData.entries()) {
+      console.log(pair[0] + ", " + pair[1]);
+    }
+
     try {
       const response = await fetch(`${process.env.REACT_APP_API_HOST}/songs`, {
         method: "POST",
         body: formData,
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await response.json();
-      if (data) {
+      if (response.status === 200) {
+        await response.json();
         setTitle("");
         setArtist("");
         setMusicFile(null);
@@ -77,9 +83,12 @@ function UploadSong() {
         if (closeBtn) {
           closeBtn.click();
         }
+      } else {
+        throw new Error("Upload failed");
       }
     } catch (error) {
       setIsLoading(false);
+      setErrorMessages("Failed to upload song, please try again.");
       console.error("Error:", error);
     }
   };
@@ -140,6 +149,7 @@ function UploadSong() {
             id="music_file"
             name="music_file"
             type="file"
+            accept="audio/mp3"
             onChange={(event) => setMusicFile(event.target.files[0])}
             required
           />
@@ -156,6 +166,7 @@ function UploadSong() {
             className="block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
             id="cover"
             name="cover"
+            accept="image/png, image/jpeg, image/jpg"
             type="file"
             onChange={(event) => setCover(event.target.files[0])}
             required
@@ -198,6 +209,7 @@ function UploadSong() {
           />
         </div>
         <div className="w-full px-3 mt-6">
+          {errorMessages && <p className="text-red-500">{errorMessages}</p>}
           <button
             className="bg-purple-700 hover:bg-purple-900 text-white font-bold py-2 px-4 rounded"
             type="submit"
@@ -206,7 +218,7 @@ function UploadSong() {
             {isLoading ? (
               <span className="loading loading-dots loading-md"></span>
             ) : (
-              "Upload"
+              "Upload Song"
             )}
           </button>
         </div>

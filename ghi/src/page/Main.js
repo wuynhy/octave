@@ -1,5 +1,5 @@
 import React from "react";
-import { ButtonAlternateWrapper } from "../components/ButtonAlternateWrapper";
+import { ButtonAlternateWrapper } from "../components/mainpage/ButtonAlternateWrapper";
 import "./style.css";
 import { Link } from "react-router-dom";
 

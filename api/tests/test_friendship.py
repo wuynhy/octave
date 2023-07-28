@@ -104,7 +104,7 @@ def test_get_one_friendship(monkeypatch):
 def test_delete_friendship():
     app.dependency_overrides[FriendshipRepository] = TestFriendshipQueries
     app.dependency_overrides[authenticator.get_current_account_data] = override
-    response = client.delete("/friendships/test3")
+    response = client.delete("/friendships/test3/delete")
     app.dependency_overrides = {}
     assert response.status_code == 200
     assert response.json()

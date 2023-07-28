@@ -128,6 +128,8 @@ async def websocket_endpoint(
                 message=parsed["message"],
             )
             new_chat = await queries.create(chat)
+            if new_chat is None:
+                raise Exception("Failed to create chat")
             new_chat.username = parsed["username"]
             if new_chat:
                 for connection in connections.values():

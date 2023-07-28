@@ -122,6 +122,8 @@ async def create_stage(
                         detail=f"Failed to add participant id {participant_id} to stage",
                     )
         return created_stage
+    except HTTPException as e:
+        raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

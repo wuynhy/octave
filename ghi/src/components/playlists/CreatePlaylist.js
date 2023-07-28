@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import useToken from "@galvanize-inc/jwtdown-for-react";
-import { useNavigate } from "react-router-dom";
 
 export default function CreatePlaylist() {
   const { token } = useToken();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [coverFile, setCoverFile] = useState(null);
-  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessages, setErrorMessages] = useState(null);
 
   const handleNameChange = (event) => {
     setName(event.target.value);
@@ -23,7 +23,8 @@ export default function CreatePlaylist() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
+    setIsLoading(true);
+    setErrorMessages(null);
     const formData = new FormData();
     formData.append("name", name);
     formData.append("description", description);
@@ -43,66 +44,84 @@ export default function CreatePlaylist() {
       );
 
       if (response.ok) {
-        console.log("Playlist created");
-        navigate("/playlists");
+        await response.json();
+        setName("");
+        setDescription("");
+        setCoverFile(null);
+
+        const closeBtn = document.querySelector(".modal .btn-ghost");
+        if (closeBtn) {
+          closeBtn.click();
+        }
       } else {
         console.log("Failed to create playlist");
       }
     } catch (error) {
       console.log("Error creating playlist:", error.message);
+      setErrorMessages("Failed to create playlist, please try again.");
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center bg-black min-h-screen p-10">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-gray-800 p-10 rounded-lg shadow-xl max-w-md"
-      >
-        <h2 className="font-semibold text-2xl text-white text-center">
-          Create Playlist
-        </h2>
+    <form
+      onSubmit={handleSubmit}
+      className="w-full max-w-lg bg-transparent shadow-md rounded px-8 pt-6 pb-8 mb-4 center-form"
+    >
+      <h2 className="font-semibold text-xl text-white">Create Playlist</h2>
+      <div className="flex flex-wrap -mx-3 mb-6">
+        <div className="w-full px-3">
+          <label className="block text-md mb-2 text-white" htmlFor="name">
+            Name
+          </label>
+          <input
+            type="text"
+            id="name"
+            value={name}
+            onChange={handleNameChange}
+            className="mb-5 w-full px-3 py-2 text-md text-black bg-gray-50 border border-gray-600 rounded"
+            required
+          />
 
-        <label className="block text-lg mb-2 text-white" htmlFor="name">
-          Name
-        </label>
-        <input
-          type="text"
-          id="name"
-          value={name}
-          onChange={handleNameChange}
-          className="mb-5 w-full px-3 py-2 text-lg text-white bg-gray-700 border border-gray-600 rounded"
-          required
-        />
+          <label
+            className="block text-md mb-2 text-white"
+            htmlFor="description"
+          >
+            Description
+          </label>
+          <textarea
+            id="description"
+            value={description}
+            onChange={handleDescriptionChange}
+            className="mb-5 w-full px-3 py-2 text-md text-black bg-gray-50 border border-gray-600 rounded"
+            required
+          ></textarea>
 
-        <label className="block text-lg mb-2 text-white" htmlFor="description">
-          Description
-        </label>
-        <textarea
-          id="description"
-          value={description}
-          onChange={handleDescriptionChange}
-          className="mb-5 w-full px-3 py-2 text-lg text-white bg-gray-700 border border-gray-600 rounded"
-          required
-        ></textarea>
-
-        <label className="block text-lg mb-2 text-white" htmlFor="cover">
-          Cover Image
-        </label>
-        <input
-          type="file"
-          id="cover"
-          onChange={handleCoverFileChange}
-          className="mb-5 w-full px-3 py-2 text-lg text-gray-300 bg-gray-700 border border-gray-600 rounded"
-        />
-
-        <button
-          type="submit"
-          className="w-full flex justify-center bg-purple-700 hover:bg-purple-900 text-gray-100 p-3 rounded-full tracking-wide font-semibold shadow-lg cursor-pointer transition ease-in duration-500"
-        >
-          Create Playlist
-        </button>
-      </form>
-    </div>
+          <label className="block text-md mb-2 text-white" htmlFor="cover">
+            Cover Image
+          </label>
+          <input
+            type="file"
+            id="cover"
+            onChange={handleCoverFileChange}
+            className="mb-5 w-full px-3 py-2 text-md text-gray-50 bg-gray-760 border border-gray-600 rounded"
+          />
+          <div className="w-full px-3 mt-6">
+            {errorMessages && <p className="text-red-500">{errorMessages}</p>}
+            <button
+              disabled={isLoading}
+              type="submit"
+              className="w-full flex justify-center bg-purple-700 hover:bg-purple-900 text-gray-100 p-3 rounded-full tracking-wide font-semibold shadow-lg cursor-pointer transition ease-in duration-500"
+            >
+              {isLoading ? (
+                <span className="loading loading-dots loading-md"></span>
+              ) : (
+                "Create Playlist"
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </form>
   );
 }

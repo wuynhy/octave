@@ -178,3 +178,42 @@
   padding-bottom: 10px; /* Space between text and bottom border */
   margin-bottom: 10px; /* Optional: Creates space between the title and the list */
 }
+
+@import url(https://fonts.googleapis.com/css?family=Anonymous+Pro);
+
+.text-animate {
+  position: relative;
+  color: hsl(0, 7%, 86%);
+  font-weight: bold!important;
+  font-family: "Anonymous Pro", monospace!important;
+  letter-spacing: 7px!important;
+  overflow: hidden;
+  border-right: 2px solid hsl(0, 0%, 80%);
+  white-space: nowrap;
+  animation: typewriter 4s steps(44) 1s 1 normal both,
+    blinkTextCursor 5s 4s forwards;
+  margin: 0 auto;
+  width: 710px;
+}
+
+/* Add the following line to center the element's parent container */
+.container2 {
+  text-align: center;
+}
+
+@keyframes typewriter {
+  from {
+    width: 0;
+  }
+  to {
+    width: 500px;
+  }
+}
+@keyframes blinkTextCursor {
+  from {
+    border-right-color: hsl(0, 0%, 80%);
+  }
+  to {
+    border-right-color: transparent;
+  }
+}
