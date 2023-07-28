@@ -253,7 +253,7 @@ export default function PlaylistDetail({ onBack, playlistId }) {
             >
               X
             </button>
-            <UpdatePlaylist />
+            <UpdatePlaylist playlistId={playlistId} />
           </div>
         </div>
       )}

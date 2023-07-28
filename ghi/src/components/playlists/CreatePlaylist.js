@@ -102,6 +102,7 @@ export default function CreatePlaylist() {
           </label>
           <input
             type="file"
+            accept="image/png, image/jpeg, image/jpg"
             id="cover"
             onChange={handleCoverFileChange}
             className="mb-5 w-full px-3 py-2 text-md text-gray-50 bg-gray-760 border border-gray-600 rounded"

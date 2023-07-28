@@ -106,7 +106,6 @@ def test_delete_song(monkeypatch):
     app.dependency_overrides[
         authenticator.get_current_account_data
         ] = override
-
     response = client.delete("/songs/1")
     app.dependency_overrides = {}
     assert response.status_code == 200

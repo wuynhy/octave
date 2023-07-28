@@ -1,42 +1,33 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import useToken from "@galvanize-inc/jwtdown-for-react";
-import { useNavigate, useParams } from "react-router-dom";
 
-export default function UpdatePlaylist() {
+export default function UpdatePlaylist({ playlistId }) {
   const { token } = useToken();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [coverFile, setCoverFile] = useState(null);
-  const navigate = useNavigate();
-  const { playlistId } = useParams();
+  const [, setPlaylist] = useState([])
+
+  const fetchPlaylist = useCallback(async () => {
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_API_HOST}/playlists/${playlistId}`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setPlaylist(data);
+      } else {
+        console.log("Failed to fetch playlist");
+      }
+    } catch (error) {
+      console.log("Error fetching playlist:", error.message);
+    }
+  }, [playlistId]);
 
   useEffect(() => {
-    const fetchPlaylist = async () => {
-      try {
-        const response = await fetch(
-          `${process.env.REACT_APP_API_HOST}/playlists/${playlistId}`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch playlist");
-        }
-        const playlistData = await response.json();
-        setName(playlistData.name);
-        setDescription(playlistData.description);
-      } catch (error) {
-        console.error("Error fetching playlist:", error);
-      }
-    };
-
     fetchPlaylist();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playlistId]);
+  }, []);
 
   const handleNameChange = (event) => {
     setName(event.target.value);
@@ -73,7 +64,7 @@ export default function UpdatePlaylist() {
       );
 
       if (response.ok) {
-        navigate(`/playlists/${playlistId}`);
+        console.log(response);
       } else {
         throw new Error("Failed to update playlist");
       }
@@ -101,6 +92,7 @@ export default function UpdatePlaylist() {
           value={name}
           onChange={handleNameChange}
           className="mb-5 w-full px-3 py-2 text-lg text-white bg-gray-700 border border-gray-600 rounded"
+          style={{ backgroundColor: "#374151" }}
           required
         />
 
@@ -121,6 +113,7 @@ export default function UpdatePlaylist() {
         <input
           type="file"
           id="cover"
+          accept="image/png, image/jpeg, image/jpg"
           onChange={handleCoverFileChange}
           className="mb-5 w-full px-3 py-2 text-lg text-gray-300 bg-gray-700 border border-gray-600 rounded"
         />
