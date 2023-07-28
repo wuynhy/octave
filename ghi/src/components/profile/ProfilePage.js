@@ -14,6 +14,8 @@ import EditProfile from "./EditProfile";
 import UploadSong from "../UploadSong";
 import { MdAddCircleOutline } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
+import CreateStages from "../../CreateStage";
+import ListStages from "../../ListStages"
 
 const ProfilePage = () => {
   const dispatch = useDispatch();
@@ -103,7 +105,7 @@ const ProfilePage = () => {
         // formContent = <UploadPlaylist />;
         break;
       case "StageForm":
-        // formContent = <UploadStage />;
+        formContent = <CreateStages />;
         break;
       default:
         formContent = null;
@@ -208,6 +210,7 @@ const ProfilePage = () => {
 
         const showUploadButton = currentUser === username;
 
+
         return (
           <>
             {showUploadButton && (
@@ -261,7 +264,39 @@ const ProfilePage = () => {
       case "Playlists":
         return <div>Playlists content</div>;
       case "Stages":
-        return <div>Stages content</div>;
+        if (isFetching) return <Loader title="Loading songs..." />;
+        if (error) return <Error />;
+        return (
+          <>
+            <input
+              type="checkbox"
+              id="my_modal_7"
+              className="modal-toggle"
+              checked={isModalOpen}
+              onChange={() => setIsModalOpen(!isModalOpen)}
+            />
+            {isModalOpen && (
+              <ModalContent
+                formType="StageForm"
+                onClose={() => setIsModalOpen(false)}
+              />
+            )}
+
+            <div className="flex justify-end">
+              <label
+                id="modal_7"
+                htmlFor="my_modal_7"
+                className="btn flex items-center justify-center w-15 h-10"
+                style={{ backgroundColor: "transparent", marginRight: "10px" }}
+              >
+                <MdAddCircleOutline size={25} />
+              </label>
+            </div>
+            <div className="flex flex-wrap sm:justify-start justify-center gap-8">
+                <ListStages/>
+            </div>
+          </>
+        );
       case "Friends":
         return (
           <ErrorBoundary>

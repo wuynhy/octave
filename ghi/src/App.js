@@ -15,7 +15,8 @@ import Playlists from "./components/playlists/Playlists";
 import PlaylistDetail from "./components/playlists/PlaylistDetail";
 import CreatePlaylist from "./components/playlists/CreatePlaylist";
 import UpdatePlaylist from "./components/playlists/UpdatePlaylist";
-
+import CreateStages from "./CreateStage";
+import ListStages from "./ListStages";
 function App() {
   const baseUrl = process.env.REACT_APP_API_HOST;
   const domain = /https:\/\/[^/]+/;
@@ -42,7 +43,8 @@ function App() {
             <Route exact path="/" element={<Main />} />
             <Route exact path="/signup" element={<SignupForm />} />
             <Route exact path="/login" element={<LoginForm />} />
-
+            <Route exact path="/CreateStage" element={<CreateStages />} />
+            <Route exact path="/ListStages" element={<ListStages />} />
             <Route
               element={
                 <div style={{ display: "flex" }}>
