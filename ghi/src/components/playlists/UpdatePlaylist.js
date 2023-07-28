@@ -31,10 +31,8 @@ export default function UpdatePlaylist() {
         setDescription(playlistData.description);
       } catch (error) {
         console.error("Error fetching playlist:", error);
-        // Handle error, e.g., show a toast or redirect to an error page.
       }
     };
-
     fetchPlaylist();
   }, [token, playlistId]);
 
@@ -53,14 +51,29 @@ export default function UpdatePlaylist() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    const formData = new FormData();
-    formData.append("name", name);
-    formData.append("description", description);
-    if (coverFile) {
-      formData.append("cover", coverFile);
-    }
-
     try {
+      const currentPlaylistResponse = await fetch(
+        `${process.env.REACT_APP_API_HOST}/playlists/${playlistId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const currentPlaylist = await currentPlaylistResponse.json();
+
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("description", description);
+      if (coverFile) {
+        formData.append("cover", coverFile);
+      }
+
+      const songs = currentPlaylist.songs;
+      for (let i = 0; i < songs.length; i++) {
+        formData.append(`songs[${i}]`, songs[i]);
+      }
+
       const response = await fetch(
         `${process.env.REACT_APP_API_HOST}/playlists/${playlistId}`,
         {

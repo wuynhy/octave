@@ -9,7 +9,7 @@ export default function PlaylistDetail() {
   const [playlist, setPlaylist] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
-  const [playlistSongs, setPlaylistSongs] = useState([]);
+  const [playlistSongs] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -156,7 +156,7 @@ export default function PlaylistDetail() {
 
  return (
       <div className="min-h-screen p-12 flex flex-col items-center">
-      <div className="bg-gradient-to-b from-slate-800 via-slate-500 via-gray-400 to-slate-300 w-full rounded-lg p-8">
+      <div className="bg-gradient-to-b from-slate-800 via-slate-600 via-gray-400 to-slate-400 w-full rounded-lg p-8">
 
       <div className="flex justify-between items-start mb-5">
         {playlist && (
@@ -307,8 +307,8 @@ export default function PlaylistDetail() {
                 </button>
                 <div
                   style={{
-                    minHeight: '80px', // Adjust this to the minimum height you want for the container
-                    maxHeight: '500px', // Adjust this to the maximum height you want for the container
+                    minHeight: '80px',
+                    maxHeight: '500px',
                     overflowY: 'auto'
                   }}
                 >
@@ -327,47 +327,51 @@ export default function PlaylistDetail() {
         </div>
       )}
 
-    <div className="justify-content-center border border-gray-800 p-2 rounded-lg bg-gradient-to-t from-slate-900 to-gray-500 flex flex-col w-full shadow-inner">
-  <div className="flex flex-grow">
+        <div className="justify-content-center border border-gray-800 p-2 rounded-lg bg-gradient-to-t from-slate-900 to-gray-500 flex flex-col w-full shadow-inner">
+  <div className="flex flex-grow overflow-y-auto h-[500px]">
     {playlist && playlist.songs && playlist.songs.length > 0 ? (
       <div className="w-3/4 mr-4">
         <table className="table-auto w-full">
           <thead>
             <tr>
               <th className="border px-2 py-2 text-lg font-semibold text-left">#</th>
-              <th className="border px-2 py-2 text-lg font-semibold text-left">Cover</th>
               <th className="border px-2 py-2 text-lg font-semibold text-left">Title</th>
               <th className="border px-2 py-2 text-lg font-semibold text-left">Artist</th>
-              <th className="border px-2 py-2 text-lg font-semibold text-left">Music File</th>
+              <th className="border px-2 py-2 text-lg font-semibold text-left">Music Player </th>
+
               <th className="border px-2 py-2 text-lg font-semibold text-left">
                 <div style={{ fontFamily: "Montserrat, sans-serif" }}>Duration</div>
               </th>
+              <th className="border px-2 py-2 text-lg font-semibold text-left">Cover </th>
             </tr>
           </thead>
           <tbody className="space-y-4">
-           {playlist.songs.map((song, index) => (
-    <tr key={index} className="py-12">
-      <td className="border px-2 py-2 text-lg p-1 leading-1">{index + 1}</td>
-      <td className="border px-2 py-2">
-        <img
-          className="w-12 h-10 object-cover rounded"
-          src={playlist.covers[index]}
-          alt={`Cover for ${song}`}
-        />
-      </td>
-      <td className="border px-2 py-2">
-        <ol style={{ margin: 0, padding: 0 }}>
-          <li style={{ marginBottom: "10px" }}>{song}</li>
-        </ol>
-      </td>
-      <td className="border px-2 py-2 text-lg">{playlist.artists[index]}</td>
-      <td className="border px-2 py-2">
-        <audio controls>
-          <source src={playlist.music_files[index]} type="audio/mpeg" />
-        </audio>
-      </td>
-      <td className="border px-2 py-2 text-lg">{formatDuration(playlist.durations[index])}</td>
-    </tr>
+            {playlist.songs.map((song, index) => (
+              <tr key={index} className="py-12">
+                <td className="border px-2 py-2 text-lg p-1 leading-1 pb-4">{index + 1}</td>
+
+                <td className="border px-2 py-2 pb-3">
+                  <ol style={{ margin: 0, padding: 0 }}>
+                    <li style={{ marginBottom: "10px" }}>{song}</li>
+                  </ol>
+                </td>
+                <td className="border px-2 py-2 text-lg pt-2">{playlist.artists[index]}</td>
+                <td className="border px-2 py-2 pb-3">
+                  <audio controls>
+                    <source src={playlist.music_files[index]} type="audio/mpeg" />
+                  </audio>
+                </td>
+                <td className="border px-2 py-2 text-lg pb-3">{formatDuration(playlist.durations[index])}</td>
+                <td className="border px-1 py-2px text-lg" >
+
+                  <img
+
+                    src={playlist.covers[index]}
+                    alt={`Cover for ${song.title}`}
+                    style={{ width: "80px", height: "80px" }}
+                  />
+                </td>
+              </tr>
             ))}
           </tbody>
         </table>
@@ -375,44 +379,32 @@ export default function PlaylistDetail() {
     ) : (
       <p>No songs in this playlist yet.</p>
     )}
-    <div className="w-1/8 bg-gray-800">
-      {playlist && playlist.songs && playlist.songs.length > 0 ? (
-        playlist.songs.map((song, index) => (
-          <div key={index} className="w-full bg-gray-800">
-            <img
-
-              src={playlist.covers[index]}
-              alt={`Cover for ${song.title}`}
-              className="w-40 h-40 p-4 object-cover"
-            />
-          </div>
-        ))
-      ) : null
-
-      }
-    </div>
   </div>
-<div className="w-full flex overflow-x-scroll py-2 border" style={{ scrollbarWidth: "none" }}>
-  {allPlaylists.map((pl) => (
-    <div
-      key={pl.id}
-      className="shadow-lg flex-shrink-0 w-48 h-48 mr-2 border-2 transform transition-all duration-500 hover:scale-110 hover:shadow-2xl hover:bg-white hover:bg-opacity-20"
-    >
-      <Link to={`/playlists/${pl.id}`}>
-        <img
-          className="shadow-lg object-cover w-full h-2/3 rounded"
-          src={pl.cover_url}
-          alt={pl.name}
-        />
-        <p className="text-center text-white">{pl.name}</p>
-      </Link>
-    </div>
-  ))}
 </div>
 
-</div>
+<div className="container mx-auto p-4 border-2 border-gray-300 rounded-md shadow-md">
+  <div className="w-full flex overflow-x-scroll py-2 border" style={{ scrollbarWidth: "none" }}>
+    {allPlaylists.map((pl) => (
+      <div
+        key={pl.id}
+        className="shadow-lg flex-shrink-0 w-48 h-48 mr-2 border-2 transform transition-all duration-500 hover:scale-110 hover:shadow-2xl hover:bg-white hover:bg-opacity-20"
+      >
+        <Link to={`/playlists/${pl.id}`}>
+          <img
+            className="shadow-lg object-cover w-full h-2/3 rounded"
+            src={pl.cover_url}
+            alt={pl.name}
+          />
+          <p className="text-center text-white">{pl.name}</p>
+        </Link>
+      </div>
+    ))}
+  </div>
 </div>
 
+
+
+</div>
 </div>
   );
 }
