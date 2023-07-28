@@ -294,22 +294,6 @@ class PlaylistRepository:
                             playlist_id,
                         ],
                     )
-                    if playlist.songs is not None:
-                        db.execute(
-                            """
-                            DELETE FROM playlist_songs
-                            WHERE playlist_id = %s
-                            """,
-                            [playlist_id],
-                        )
-                        for song in playlist.songs:
-                            db.execute(
-                                """
-                                INSERT INTO playlist_songs (playlist_id, song_id)
-                                VALUES (%s, (SELECT id FROM songs WHERE name = %s));
-                                """,
-                                [playlist_id, song],
-                            )
 
             updated_playlist = self.get_playlist_by_id(playlist_id)
             if updated_playlist is None:
@@ -320,26 +304,6 @@ class PlaylistRepository:
             print(f"Error updating playlist: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
 
-    def delete_playlist(self, playlist_id: int) -> bool:
-        try:
-            existing_playlist = self.get_playlist_by_id(playlist_id)
-            if existing_playlist is None:
-                return False
-            existing_cover_key = existing_playlist.cover_url.split("/")[-1]
-            self.delete_from_s3(existing_cover_key)
-            with pool.connection() as conn:
-                with conn.cursor() as db:
-                    db.execute(
-                        """
-                        DELETE FROM playlists
-                        WHERE id = %s
-                        """,
-                        [playlist_id],
-                    )
-                    return True
-        except Exception as e:
-            print(f"Error deleting playlist: {e}")
-            return False
 
     def create_playlist_song(self, playlist_id, song_id):
         try:

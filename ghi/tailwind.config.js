@@ -4,6 +4,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        customeGray: 'rgb(225, 212, 212)',
         black: "#191624",
       },
       animation: {
