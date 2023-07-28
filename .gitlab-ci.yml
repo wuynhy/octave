@@ -38,7 +38,7 @@ build-api-image:
   before_script:
     - echo $CI_JOB_TOKEN | docker login -u gitlab-ci-token registry.gitlab.com --password-stdin
   script:
-    - docker build --tag $GITLAB_IMAGE:latest ./api
+    - docker build --build-arg AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --build-arg AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY --build-arg AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION --build-arg AWS_BUCKET_NAME=$AWS_BUCKET_NAME --tag $GITLAB_IMAGE:latest ./api
     - docker push $GITLAB_IMAGE:latest
   only:
     - main
@@ -51,7 +51,7 @@ build-front-end-job:
   variables:
     PUBLIC_URL: https://cali-pals.gitlab.io/module3-project-gamma
     REACT_APP_API_HOST: https://mar-8-pt-octaveapi.mod3projects.com
-    REACT_APP_WS_HOST: ws://mar-8-pt-octaveapi.mod3projects.com
+    REACT_APP_WS_HOST: wss://mar-8-pt-octaveapi.mod3projects.com
   script:
     - cd ghi
     - npm install
