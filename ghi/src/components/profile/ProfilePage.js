@@ -214,42 +214,42 @@ const ProfilePage = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case "Songs":
-        const showUploadButton = currentUser === username;
+        // const showUploadButton = currentUser === username;
         setSelectedPlaylist(null);
         return (
-          <>
-            {showUploadButton && (
-              <>
-                <input
-                  type="checkbox"
-                  id="my_modal_7"
-                  className="modal-toggle"
-                  checked={isModalOpen}
-                  onChange={() => setIsModalOpen(!isModalOpen)}
-                />
-                {isModalOpen && (
-                  <ModalContent
-                    formType="SongForm"
-                    onClose={() => setIsModalOpen(false)}
-                  />
-                )}
-                <div className="flex justify-end">
-                  <label
-                    id="modal_7"
-                    htmlFor="my_modal_7"
-                    className="btn flex items-center justify-center w-15 h-10"
-                    style={{
-                      backgroundColor: "transparent",
-                      marginRight: "10px",
-                    }}
-                  >
-                    <MdAddCircleOutline size={25} />
-                  </label>
-                </div>
-              </>
-            )}
+          // <>
+          //   {showUploadButton && (
+          //     <>
+          //       <input
+          //         type="checkbox"
+          //         id="my_modal_7"
+          //         className="modal-toggle"
+          //         checked={isModalOpen}
+          //         onChange={() => setIsModalOpen(!isModalOpen)}
+          //       />
+          //       {isModalOpen && (
+          //         <ModalContent
+          //           formType="SongForm"
+          //           onClose={() => setIsModalOpen(false)}
+          //         />
+          //       )}
+          //       <div className="flex justify-end">
+          //         <label
+          //           id="modal_7"
+          //           htmlFor="my_modal_7"
+          //           className="btn flex items-center justify-center w-15 h-10"
+          //           style={{
+          //             backgroundColor: "transparent",
+          //             marginRight: "10px",
+          //           }}
+          //         >
+          //           <MdAddCircleOutline size={25} />
+          //         </label>
+          //       </div>
+          //     </>
+          //   )}
             <SongsList username={username} />
-          </>
+          // </>
         );
       case "Playlists":
         const showPlaylistButton = currentUser === username;
